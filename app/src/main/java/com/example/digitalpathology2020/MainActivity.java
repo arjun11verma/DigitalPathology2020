@@ -35,15 +35,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Bitmap tempMap = (Bitmap)data.getExtras().get("data"); //turns the picture data into a bitmap
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        //ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         bitmapList.add(tempMap); //this stores the bitmap of the image on the app locally
-
-        tempMap.compress(Bitmap.CompressFormat.JPEG, 90, outStream); //converts this data into a JPEG
-        byte[] temp = outStream.toByteArray(); //this is a byte array of the JPEG file
+        //tempMap.compress(Bitmap.CompressFormat.JPEG, 90, outStream); //converts this data into a JPEG
+        //byte[] temp = outStream.toByteArray(); //this is a byte array of the JPEG file
         // I'm not 100% sure we should even convert it to a JPEG at this point, I'm going to have to take a look at implementing the OpenCV libraries into Android Studio
     }
 
     public void changeView(BaseView view) { currentView = view; }
+
+    public List<Bitmap> getBitmapList() {
+        return bitmapList;
+    }
 
 }
