@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private List<Mat> matList = new ArrayList<Mat>();
     private int pTimer = 0;
     private int numImages = 5;
+    private int delay = 1000; // delay until camera starts in milliseconds
+    private int period = 5000; // period of time between each picture being taken
     private boolean clicked = false;
     private Timer timer = new Timer();
     private Task timerTask = new Task(this);
@@ -64,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             @Override
             public void onClick(View v) {
                 if(!clicked) {
-                    timer.schedule(timerTask, 1000, 5000);
+                    timer.schedule(timerTask, delay, period);
                     cameraView.enableView();
                     clicked = true;
                 }
