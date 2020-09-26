@@ -3,8 +3,11 @@ package com.example.digitalpath2020;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.Button;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -17,15 +20,18 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCameraView cameraView;
     private Mat mRGBA, mRGBAT, mRGBATemp;
     private List<Mat> matList = new ArrayList<Mat>();
-    private int pTimer = -1;
-    private int TIME_CALIBRATION = 100;
+    private int pTimer = 0;
     private int numImages = 5;
-    private int TIME_LIMIT = (TIME_CALIBRATION * numImages) + 1;
+    private boolean clicked = false;
+    private Timer timer = new Timer();
+    private Task timerTask = new Task(this);
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -33,7 +39,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS: {
                     Log.i("MainActivity", "OpenCV loaded successfully");
-                    cameraView.enableView();
                 }
                 break;
                 default: {
@@ -52,6 +57,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         cameraView = (JavaCameraView) findViewById(R.id.camera);
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
+        matList.add(mRGBA);
+
+        Button startCamera = (Button)findViewById(R.id.startCamera);
+        startCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!clicked) {
+                    timer.schedule(timerTask, 1000, 5000);
+                    cameraView.enableView();
+                    clicked = true;
+                }
+            }
+        });
     }
 
     @Override
@@ -67,24 +85,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRGBA = inputFrame.rgba();
-        pTimer += 1; // by adjusting the rate at which I increase pTimer, I can adjust the rate at which I take pictures
-        if (pTimer % TIME_CALIBRATION == 0) // takes an image after TIME_CALIBRATION units of time have passed
+        if (pTimer > (numImages)) // disables the camera after numImages pictures have been taken.
         {
-            mRGBAT = mRGBA.t();
-            Core.flip(mRGBA.t(), mRGBAT, 1);
-            Imgproc.resize(mRGBAT, mRGBAT, mRGBA.size());
-            matList.add(mRGBAT);
-            mRGBATemp = mRGBAT;
-        }
-        else if (pTimer > TIME_LIMIT) // disables the camera after numImages pictures have been taken.
-        {
-            mRGBA.release();
+            timer.cancel();
+            timer.purge();
             cameraView.disableView();
-            //cameraView.setVisibility(SurfaceView.INVISIBLE);
-            //Intent intent = new Intent(this, MainActivity.class);
-            //startActivity(intent);
         }
-        return mRGBATemp;
+        return matList.get(pTimer);
     }
 
     @Override
@@ -118,5 +125,17 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         if (cameraView != null) {
             cameraView.disableView(); // stops the camera if the view is removed
         }
+    }
+
+    public void addMat(Mat mat) {
+        matList.add(mat);
+    }
+
+    public Mat getmRGBA() {
+        return mRGBA;
+    }
+
+    public void setpTimer(int x) {
+        pTimer = x;
     }
 }
