@@ -34,6 +34,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private boolean clicked = false;
     private Timer timer = new Timer();
     private Task timerTask = new Task(this);
+    private View currentView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        changeView(new MainView(this));
+    }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -51,27 +58,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        cameraView = (JavaCameraView) findViewById(R.id.camera);
+    public void activateCamera(JavaCameraView camera) {
+        cameraView = camera;
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
         matList.add(mRGBA);
+    }
 
-        Button startCamera = (Button)findViewById(R.id.startCamera);
-        startCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!clicked) {
-                    timer.schedule(timerTask, delay, period);
-                    cameraView.enableView();
-                    clicked = true;
-                }
-            }
-        });
+    public void buttonAction() {
+        if(!clicked) {
+            timer.schedule(timerTask, delay, period);
+            cameraView.enableView();
+            clicked = true;
+        }
     }
 
     @Override
@@ -139,5 +138,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public void setpTimer(int x) {
         pTimer = x;
+    }
+
+    public void changeView(View v) {
+        currentView = v;
     }
 }
