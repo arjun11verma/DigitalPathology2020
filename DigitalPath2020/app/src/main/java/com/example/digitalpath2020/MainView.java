@@ -1,6 +1,7 @@
 package com.example.digitalpath2020;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -13,13 +14,20 @@ public class MainView extends View {
         super(context);
         activity = (MainActivity)context;
         activity.setContentView(R.layout.activity_main);
+
         activity.activateCamera((JavaCameraView)activity.findViewById(R.id.camera));
 
-        Button startCamera = (Button)activity.findViewById(R.id.startCamera);
-        startCamera.setOnClickListener(new View.OnClickListener() {
+        activity.findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 activity.buttonAction();
+            }
+        });
+
+        activity.findViewById(R.id.goToLogin).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.changeView(new LoginView(activity));
             }
         });
     }

@@ -22,8 +22,18 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:text="Click to start the camera!"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/goToLogin"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/camera" />
+
+    <Button
+        android:id="@+id/goToLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="Go back!"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/startCamera"
         app:layout_constraintTop_toBottomOf="@+id/camera" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

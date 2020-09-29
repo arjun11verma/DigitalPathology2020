@@ -23,23 +23,31 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.realm.mongodb.App;
+
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCameraView cameraView;
-    private Mat mRGBA, mRGBAT, mRGBATemp;
+    private Mat mRGBA;
     private List<Mat> matList = new ArrayList<Mat>();
-    private int pTimer = 0;
-    private int numImages = 5;
+    private int pTimer = 0; // measures the amount of pictures that have been taken
+    private int maxNumImages = 5; // the number of pictures that will be taken
     private int delay = 1000; // delay until camera starts in milliseconds
     private int period = 5000; // period of time between each picture being taken
     private boolean clicked = false;
     private Timer timer = new Timer();
     private Task timerTask = new Task(this);
-    private View currentView;
+    private MDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        changeView(new MainView(this));
+        initDB(); // ONLY CALL THIS ONCE!! NEVER DO IT AGAIN!!!
+        changeView(new LoginView(this));
+    }
+
+    private void initDB() {
+        database = new MDatabase(); // creates an instance of the MongoDB Application class
+        database.onCreate();
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -61,15 +69,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void activateCamera(JavaCameraView camera) {
         cameraView = camera;
         cameraView.setVisibility(SurfaceView.VISIBLE);
-        cameraView.setCvCameraViewListener(this);
+        cameraView.setCvCameraViewListener(this); // sets the cameraview to take input from the android camera
         matList.add(mRGBA);
     }
 
     public void buttonAction() {
         if(!clicked) {
-            timer.schedule(timerTask, delay, period);
-            cameraView.enableView();
-            clicked = true;
+            timer.schedule(timerTask, delay, period); // activates the timer and schedules the task
+            cameraView.enableView(); // activates the camera
+            clicked = true; // prevents the button from being clicked multiple times and crashing the system
         }
     }
 
@@ -85,12 +93,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        mRGBA = inputFrame.rgba();
-        if (pTimer > (numImages)) // disables the camera after numImages pictures have been taken.
+        mRGBA = inputFrame.rgba(); // updates the system with each frame the android camera captures
+        if (pTimer > (maxNumImages)) // disables the camera after numImages pictures have been taken.
         {
-            timer.cancel();
-            timer.purge();
-            cameraView.disableView();
+            timer.cancel(); // stops the timer
+            timer.purge(); // makes the timertask stop occuring
+            cameraView.disableView(); // disables the camera
         }
         return matList.get(pTimer);
     }
@@ -140,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         pTimer = x;
     }
 
-    public void changeView(View v) {
-        currentView = v;
-    }
+    public void changeView(View v) {}
+
+    public App getApp() {return database.getTaskApp(); }
 }

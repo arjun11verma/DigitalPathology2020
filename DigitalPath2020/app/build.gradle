@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 30
@@ -6,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.digitalpath2020"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -19,6 +20,15 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        def appId = "digitalpathology2020-ecrjr"  // Replace with proper Application ID
+        debug {
+            buildConfigField "String", "MONGODB_REALM_APP_ID", "\"${appId}\""
+        }
+        release {
+            buildConfigField "String", "MONGODB_REALM_APP_ID", "\"${appId}\""
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
     }
 }
 
@@ -30,5 +40,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+}
 
+realm {
+    syncEnabled = true
 }
