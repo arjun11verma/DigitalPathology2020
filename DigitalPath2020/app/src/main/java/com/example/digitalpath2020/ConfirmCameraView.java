@@ -11,6 +11,7 @@ public class ConfirmCameraView extends BaseView {
     private EditText slideName;
     private EditText cancerName;
     private EditText patientName;
+    private boolean isValid = true;
 
     public ConfirmCameraView(Context context) {
         super(context);
@@ -29,7 +30,29 @@ public class ConfirmCameraView extends BaseView {
         activity.findViewById(R.id.startCameraPage).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.changeView(new MainView(activity));
+                String slide = slideName.getText().toString();
+                String cancer = cancerName.getText().toString();
+                String patient = patientName.getText().toString();
+
+                if(slide.isEmpty()) {
+                    slideName.setError("Please enter a valid slide name");
+                    isValid = false;
+                }
+                if(cancer.isEmpty()) {
+                    cancerName.setError("Please enter a valid cancer name");
+                    isValid = false;
+                }
+                if(patient.isEmpty()) {
+                    patientName.setError("Please enter a valid patient name");
+                    isValid = false;
+                }
+
+                if(isValid) {
+                    activity.setName(patient);
+                    activity.setCancer(cancer);
+                    activity.setSlide(slide);
+                    activity.changeView(new MainView(activity));
+                }
             }
         });
     }

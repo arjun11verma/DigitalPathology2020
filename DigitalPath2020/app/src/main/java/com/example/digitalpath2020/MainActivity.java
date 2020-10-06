@@ -41,8 +41,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Timer timer = new Timer();
     private Task timerTask = new Task(this);
     private MDatabase database;
-    private User thisMUser; // MongoDB User client, very different from the actual user
     private BaseView currentView;
+    private String username;
+    private String slide, cancer, name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +55,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private void initDB() {
         database = new MDatabase(); // creates an instance of the MongoDB Application class
         database.onCreate();
-    }
-
-    public static Bitmap toBitmap(Mat m) {
-        MatOfByte mByte = new MatOfByte(m);
-        byte[] arr = mByte.toArray();
-        Bitmap map = BitmapFactory.decodeByteArray(arr, 0, arr.length);
-        return map;
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -171,9 +165,28 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public List<Mat> getMatList() { return matList; }
 
-    public User getThisMUser() { return thisMUser; }
+    public String getUsername() { return username; }
 
     public Realm getRealm() {
         return database.getRealm();
+    }
+
+    public String getSlide() { return slide; }
+
+    public String getName() { return name; }
+
+    public String getCancer() { return cancer; }
+
+    public void setSlide(String slide) {
+        this.slide = slide;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public void setCancer(String cancer) {
+        this.cancer = cancer;
+    }
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

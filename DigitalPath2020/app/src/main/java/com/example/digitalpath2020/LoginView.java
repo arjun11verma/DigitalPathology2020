@@ -40,7 +40,7 @@ public class LoginView extends BaseView {
     }
 
     private void login() {
-        String username = usernameText.getText().toString();
+        final String username = usernameText.getText().toString();
         String password = passwordText.getText().toString();
 
         if(username.isEmpty()) {
@@ -59,6 +59,7 @@ public class LoginView extends BaseView {
                 @Override
                 public void onResult(App.Result<User> result) {
                     if (result.isSuccess()) {
+                        activity.setUsername(username);
                         activity.changeView(new ConfirmCameraView(activity));
                         System.out.println("Successfully logged into MongoDB. Nice!");
                     }
