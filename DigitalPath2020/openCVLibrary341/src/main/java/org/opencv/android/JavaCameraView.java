@@ -42,6 +42,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     protected JavaCameraFrame[] mCameraFrame;
     private SurfaceTexture mSurfaceTexture;
     private int mPreviewFormat = ImageFormat.NV21;
+    private boolean stopCamera = false;
 
     public static class JavaCameraSizeAccessor implements ListItemAccessor {
 
@@ -56,6 +57,10 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
             Camera.Size size = (Camera.Size) obj;
             return size.height;
         }
+    }
+
+    public void stopCamera() {
+        stopCamera = true;
     }
 
     public JavaCameraView(Context context, int cameraId) {
@@ -226,7 +231,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         return result;
     }
 
-    protected void releaseCamera() {
+    public void releaseCamera() {
         synchronized (this) {
             if (mCamera != null) {
                 mCamera.stopPreview();

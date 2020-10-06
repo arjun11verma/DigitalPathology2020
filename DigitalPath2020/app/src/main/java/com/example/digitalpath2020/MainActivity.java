@@ -2,41 +2,47 @@ package com.example.digitalpath2020;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.Button;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
+import org.opencv.core.MatOfByte;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 
+import io.realm.Realm;
 import io.realm.mongodb.App;
+import io.realm.mongodb.User;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCameraView cameraView;
-    private Mat mRGBA;
+    private Mat mRGBA, baseScreen;
     private List<Mat> matList = new ArrayList<Mat>();
     private int pTimer = 0; // measures the amount of pictures that have been taken
-    private int maxNumImages = 5; // the number of pictures that will be taken
-    private int delay = 1000; // delay until camera starts in milliseconds
+    private int maxNumImages = 2; // the number of pictures that will be taken
+    private int delay = 3000; // delay until camera starts in milliseconds
     private int period = 5000; // period of time between each picture being taken
-    private boolean clicked = false;
+    private boolean clicked = false; // prevents overclicking
     private Timer timer = new Timer();
     private Task timerTask = new Task(this);
     private MDatabase database;
+    private User thisMUser; // MongoDB User client, very different from the actual user
+    private BaseView currentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +54,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private void initDB() {
         database = new MDatabase(); // creates an instance of the MongoDB Application class
         database.onCreate();
+    }
+
+    public static Bitmap toBitmap(Mat m) {
+        MatOfByte mByte = new MatOfByte(m);
+        byte[] arr = mByte.toArray();
+        Bitmap map = BitmapFactory.decodeByteArray(arr, 0, arr.length);
+        return map;
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -70,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         cameraView = camera;
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this); // sets the cameraview to take input from the android camera
-        matList.add(mRGBA);
     }
 
     public void buttonAction() {
@@ -94,13 +106,18 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRGBA = inputFrame.rgba(); // updates the system with each frame the android camera captures
-        if (pTimer > (maxNumImages)) // disables the camera after numImages pictures have been taken.
+        if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken.
         {
             timer.cancel(); // stops the timer
             timer.purge(); // makes the timertask stop occuring
-            cameraView.disableView(); // disables the camera
+            cameraView.disableView(); // theoretically, stops the camera. It doesn't work though
         }
-        return matList.get(pTimer);
+        if(matList.size() > 0) {
+            return matList.get(pTimer);
+        }
+        else {
+            return baseScreen;
+        }
     }
 
     @Override
@@ -148,7 +165,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         pTimer = x;
     }
 
-    public void changeView(View v) {}
+    public void changeView(BaseView v) { currentView = v; }
 
     public App getApp() {return database.getTaskApp(); }
+
+    public List<Mat> getMatList() { return matList; }
+
+    public User getThisMUser() { return thisMUser; }
+
+    public Realm getRealm() {
+        return database.getRealm();
+    }
 }

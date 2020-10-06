@@ -1,14 +1,11 @@
 package com.example.digitalpath2020;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
 import org.opencv.android.JavaCameraView;
 
-public class MainView extends View {
-    private MainActivity activity;
+public class MainView extends BaseView {
 
     public MainView(Context context) {
         super(context);
@@ -21,13 +18,6 @@ public class MainView extends View {
             @Override
             public void onClick(View v) {
                 activity.buttonAction();
-            }
-        });
-
-        activity.findViewById(R.id.goToLogin).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activity.changeView(new LoginView(activity));
             }
         });
     }

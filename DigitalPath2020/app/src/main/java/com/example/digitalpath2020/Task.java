@@ -29,12 +29,12 @@ public class Task extends TimerTask {
 
     @Override
     public void run() {
-        timer += 1;
         mRGBA = activity.getmRGBA();
         mRGBAT = mRGBA.t();
         Core.flip(mRGBA.t(), mRGBAT, 1);
         Imgproc.resize(mRGBAT, mRGBAT, mRGBA.size());
         activity.setpTimer(timer);
         activity.addMat(mRGBAT);
+        timer += 1;
     }
 }

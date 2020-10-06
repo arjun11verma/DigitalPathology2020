@@ -11,15 +11,20 @@ import io.realm.mongodb.AppConfiguration;
 
 public class MDatabase extends Application {
     private App taskApp;
+    private Realm realm;
 
     @Override
     public void onCreate() { // this is called immediately when the app begins, and it connects to the MongoDB server
         super.onCreate();
-        Realm.init(this); // intializes the client to be this application
+        realm.init(this); // intializes the client to be this application
         taskApp = new App(new AppConfiguration.Builder("digitalpathology2020-ecrjr").build()); // calls on my cluster's appID to access the MongoDB Realm through the MongoDB server
         if (BuildConfig.DEBUG) {
             RealmLog.setLevel(LogLevel.ALL);
         }
+    }
+
+    public Realm getRealm() {
+        return realm;
     }
 
     public App getTaskApp() {
