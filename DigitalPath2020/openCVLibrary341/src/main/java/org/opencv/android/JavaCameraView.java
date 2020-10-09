@@ -42,7 +42,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     protected JavaCameraFrame[] mCameraFrame;
     private SurfaceTexture mSurfaceTexture;
     private int mPreviewFormat = ImageFormat.NV21;
-    private boolean stopCamera = false;
+    private boolean stopCamera = true;
 
     public static class JavaCameraSizeAccessor implements ListItemAccessor {
 
@@ -60,7 +60,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     }
 
     public void stopCamera() {
-        stopCamera = true;
+        stopCamera = false;
     }
 
     public JavaCameraView(Context context, int cameraId) {
@@ -276,25 +276,22 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     }
 
     @Override
-    protected void disconnectCamera() {
+    public void disconnectCamera() {
         /* 1. We need to stop thread which updating the frames
          * 2. Stop camera and release it
          */
+
+        stopCamera = false;
+
         Log.d(TAG, "Disconnecting from camera");
-        try {
-            mStopThread = true;
-            Log.d(TAG, "Notify thread");
-            synchronized (this) {
-                this.notify();
-            }
-            Log.d(TAG, "Waiting for thread");
-            if (mThread != null)
-                mThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            mThread =  null;
+        mStopThread = true;
+        mThread.interrupt();
+        Log.d(TAG, "Notify thread");
+        synchronized (this) {
+            this.notify();
         }
+
+        Log.d(TAG, "We did it boys, we killed the thread.");
 
         /* Now release camera */
         releaseCamera();
@@ -304,15 +301,17 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
-        synchronized (this) {
-            mFrameChain[mChainIdx].put(0, 0, frame);
-            mCameraFrameReady = true;
-            this.notify();
+        if(stopCamera) {
+            if (BuildConfig.DEBUG)
+                Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
+            synchronized (this) {
+                mFrameChain[mChainIdx].put(0, 0, frame);
+                mCameraFrameReady = true;
+                this.notify();
+            }
+            if (mCamera != null)
+                mCamera.addCallbackBuffer(mBuffer);
         }
-        if (mCamera != null)
-            mCamera.addCallbackBuffer(mBuffer);
     }
 
     private class JavaCameraFrame implements CvCameraViewFrame {
@@ -352,33 +351,34 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     };
 
     private class CameraWorker implements Runnable {
-
         @Override
         public void run() {
-            do {
-                boolean hasFrame = false;
-                synchronized (JavaCameraView.this) {
-                    try {
-                        while (!mCameraFrameReady && !mStopThread) {
-                            JavaCameraView.this.wait();
+            if (stopCamera) {
+                do {
+                    boolean hasFrame = false;
+                    synchronized (JavaCameraView.this) {
+                        try {
+                            while (!mCameraFrameReady && !mStopThread) {
+                                JavaCameraView.this.wait();
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        if (mCameraFrameReady)
+                        {
+                            mChainIdx = 1 - mChainIdx;
+                            mCameraFrameReady = false;
+                            hasFrame = true;
+                        }
                     }
-                    if (mCameraFrameReady)
-                    {
-                        mChainIdx = 1 - mChainIdx;
-                        mCameraFrameReady = false;
-                        hasFrame = true;
-                    }
-                }
 
-                if (!mStopThread && hasFrame) {
-                    if (!mFrameChain[1 - mChainIdx].empty())
-                        deliverAndDrawFrame(mCameraFrame[1 - mChainIdx]);
-                }
-            } while (!mStopThread);
-            Log.d(TAG, "Finish processing thread");
+                    if (!mStopThread && hasFrame) {
+                        if (!mFrameChain[1 - mChainIdx].empty())
+                            deliverAndDrawFrame(mCameraFrame[1 - mChainIdx]);
+                    }
+                } while (!mStopThread);
+                Log.d(TAG, "Finish processing thread");
+            }
         }
     }
 }

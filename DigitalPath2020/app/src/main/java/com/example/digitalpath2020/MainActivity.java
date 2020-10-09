@@ -6,9 +6,11 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
@@ -44,12 +46,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private BaseView currentView;
     private String username;
     private String slide, cancer, name;
+    MainActivity activity = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initDB(); // ONLY CALL THIS ONCE!! NEVER DO IT AGAIN!!!
-        changeView(new LoginView(this));
+        changeView(new MainView(this));
     }
 
     private void initDB() {
@@ -100,11 +103,20 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRGBA = inputFrame.rgba(); // updates the system with each frame the android camera captures
-        if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken.
+        if (matList.size() == (maxNumImages)) // disables the camera after numImages pictures have been taken.
         {
             timer.cancel(); // stops the timer
             timer.purge(); // makes the timertask stop occuring
-            cameraView.disableView(); // theoretically, stops the camera. It doesn't work though
+            cameraView.disconnectCamera();
+            cameraView.disableView();
+            cameraView.stopCamera();
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    changeView(new AfterCaptureView(activity));
+                }
+            });
         }
         if(matList.size() > 0) {
             return matList.get(pTimer);
@@ -180,12 +192,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void setSlide(String slide) {
         this.slide = slide;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public void setCancer(String cancer) {
         this.cancer = cancer;
     }
+
     public void setUsername(String username) {
         this.username = username;
     }

@@ -13,29 +13,24 @@ import io.realm.Realm;
 public class AfterCaptureView extends BaseView {
     private String partitionKey = "DigitalPath2020";
     private byte[][] imgArr;
-
-
+    
     public AfterCaptureView(Context context) {
         super(context);
 
-        for(int i = 0; i < activity.getMatList().size(); i++) {
+        activity.setContentView(R.layout.after_capture_activity);
+
+        /*for(int i = 0; i < activity.getMatList().size(); i++) {
             byte[] tempArr = toByteArray(activity.getMatList().get(i));
             imgArr[i] = tempArr;
-        }
+        }*/
 
-        final Images imgSet = new Images(partitionKey, activity.getUsername(), activity.getName(), activity.getSlide(), activity.getCancer(), imgArr[0]);
+        //final Images imgSet = new Images(partitionKey, activity.getUsername(), activity.getName(), activity.getSlide(), activity.getCancer(), imgArr[0]);
 
-        activity.getRealm().executeTransactionAsync(new Realm.Transaction() {
+        /*activity.getRealm().executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 realm.insert(imgSet);
             }
-        });
-    }
-
-    private byte[] toByteArray(Mat m) {
-        MatOfByte mByte = new MatOfByte(m);
-        byte[] arr = mByte.toArray();
-        return arr;
+        });*/
     }
 }

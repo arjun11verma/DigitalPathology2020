@@ -15,10 +15,12 @@ public class ConfirmCameraView extends BaseView {
 
     public ConfirmCameraView(Context context) {
         super(context);
+
+        activity.setContentView(R.layout.confirm_camera_activity);
+
         slideName = activity.findViewById(R.id.slideType);
         cancerName = activity.findViewById(R.id.cancerType);
         patientName = activity.findViewById(R.id.patientName);
-        activity.setContentView(R.layout.confirm_camera_activity);
 
         activity.findViewById(R.id.previewCamera).setOnClickListener(new OnClickListener() {
             @Override
@@ -30,6 +32,8 @@ public class ConfirmCameraView extends BaseView {
         activity.findViewById(R.id.startCameraPage).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                isValid = true;
+
                 String slide = slideName.getText().toString();
                 String cancer = cancerName.getText().toString();
                 String patient = patientName.getText().toString();
@@ -51,6 +55,7 @@ public class ConfirmCameraView extends BaseView {
                     activity.setName(patient);
                     activity.setCancer(cancer);
                     activity.setSlide(slide);
+
                     activity.changeView(new MainView(activity));
                 }
             }
