@@ -1,13 +1,9 @@
 package com.example.digitalpath2020;
 
 import org.bson.types.ObjectId;
-import org.opencv.core.Mat;
-
-import java.util.List;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
-import io.realm.annotations.Required;
 
 public class Images extends RealmObject {
     @PrimaryKey

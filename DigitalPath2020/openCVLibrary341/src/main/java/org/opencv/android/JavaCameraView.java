@@ -59,10 +59,6 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         }
     }
 
-    public void stopCamera() {
-        stopCamera = false;
-    }
-
     public JavaCameraView(Context context, int cameraId) {
         super(context, cameraId);
     }

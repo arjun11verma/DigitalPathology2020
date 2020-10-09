@@ -1,7 +1,6 @@
 package com.example.digitalpath2020;
 
 import android.content.Context;
-import android.net.wifi.hotspot2.pps.Credential;
 import android.view.View;
 import android.widget.EditText;
 
@@ -64,7 +63,7 @@ public class LoginView extends BaseView {
                         System.out.println("Successfully logged into MongoDB. Nice!");
                     }
                     else {
-                        System.out.println("You couldn't log in. That stinks.");
+                        System.out.println("You couldn't log in.");
                         String error = "Your username or password is incorrect.";
                         usernameText.setError(error);
                         passwordText.setError(error);

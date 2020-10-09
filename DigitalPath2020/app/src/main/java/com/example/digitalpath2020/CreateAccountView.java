@@ -6,7 +6,6 @@ import android.widget.EditText;
 
 import io.realm.mongodb.App;
 import io.realm.mongodb.Credentials;
-import io.realm.mongodb.User;
 
 public class CreateAccountView extends BaseView {
     private Credentials connectCred;

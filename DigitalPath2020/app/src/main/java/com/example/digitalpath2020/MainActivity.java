@@ -2,17 +2,9 @@ package com.example.digitalpath2020;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Camera;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -20,47 +12,50 @@ import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 
 import io.realm.Realm;
 import io.realm.mongodb.App;
-import io.realm.mongodb.User;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
-    private JavaCameraView cameraView;
-    private Mat mRGBA, baseScreen;
-    private List<Mat> matList = new ArrayList<Mat>();
+    private JavaCameraView cameraView; // View that will be accessing the camera, taking pictures and displaying them
+    private Mat mRGBA, baseScreen; // Mat objects that will act as temporary storage for camera data
+    private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading
+
     private int pTimer = 0; // measures the amount of pictures that have been taken
     private int maxNumImages = 2; // the number of pictures that will be taken
-    private int delay = 3000; // delay until camera starts in milliseconds
-    private int period = 5000; // period of time between each picture being taken
-    private boolean clicked = false; // prevents overclicking
-    private Timer timer = new Timer();
-    private Task timerTask = new Task(this);
-    private MDatabase database;
-    private BaseView currentView;
-    private String username;
-    private String slide, cancer, name;
+    private int delay = 2000; // delay until camera starts in milliseconds
+    private int period = 2000; // period of time between each picture being taken
+    private Timer timer;
+    private Task timerTask; // task to be executed that will take in and do rudimentary processing on images
+    private boolean clicked = false; // prevents a crash by stopping the button after it has been clicked once
+
+    private MDatabase database; // AWS database to be connected to through the MongoDB client
+    private String username; // user data
+    private String slide, cancer, name; // slide image/user data
+
     MainActivity activity = this;
+    private BaseView currentView; // current page of the app
+    private boolean check = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initDB(); // ONLY CALL THIS ONCE!! NEVER DO IT AGAIN!!!
-        changeView(new MainView(this));
+        initDB();
+        if(check) {
+            changeView(new LoginView(this));
+        }
     }
 
     private void initDB() {
         database = new MDatabase(); // creates an instance of the MongoDB Application class
-        database.onCreate();
+        database.onCreate(); // connects to the AWS database cluster through our app's MongoDB client
     }
 
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) { // loads the OpenCV library
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
@@ -76,18 +71,26 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     };
 
-    public void activateCamera(JavaCameraView camera) {
+    public void activateCamera(JavaCameraView camera) { // activates and initializes the camera
         cameraView = camera;
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this); // sets the cameraview to take input from the android camera
     }
 
-    public void buttonAction() {
+    public void buttonAction() { // begins to take pictures
         if(!clicked) {
+            matList.clear();
+            timer = new Timer();
+            timerTask = new Task(this);
             timer.schedule(timerTask, delay, period); // activates the timer and schedules the task
             cameraView.enableView(); // activates the camera
             clicked = true; // prevents the button from being clicked multiple times and crashing the system
         }
+    }
+
+    public void resetClick()
+    {
+        clicked = false;
     }
 
     @Override
@@ -103,18 +106,18 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRGBA = inputFrame.rgba(); // updates the system with each frame the android camera captures
-        if (matList.size() == (maxNumImages)) // disables the camera after numImages pictures have been taken.
+        if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken.
         {
             timer.cancel(); // stops the timer
             timer.purge(); // makes the timertask stop occuring
             cameraView.disconnectCamera();
             cameraView.disableView();
-            cameraView.stopCamera();
 
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    changeView(new AfterCaptureView(activity));
+                    check = false;
+                    changeView(new AfterCaptureView(activity)); // goes to the after capture page after the set number of images has been captured
                 }
             });
         }
@@ -158,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             cameraView.disableView(); // stops the camera if the view is removed
         }
     }
+
+    // getters and setters for the fields
 
     public void addMat(Mat mat) {
         matList.add(mat);

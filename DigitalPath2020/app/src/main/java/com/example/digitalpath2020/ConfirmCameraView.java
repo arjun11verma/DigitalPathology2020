@@ -55,7 +55,6 @@ public class ConfirmCameraView extends BaseView {
                     activity.setName(patient);
                     activity.setCancer(cancer);
                     activity.setSlide(slide);
-
                     activity.changeView(new MainView(activity));
                 }
             }

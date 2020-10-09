@@ -1,7 +1,6 @@
 package com.example.digitalpath2020;
 
 import android.app.Application;
-import android.os.AsyncTask;
 
 import io.realm.Realm;
 import io.realm.log.LogLevel;
