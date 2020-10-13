@@ -16,10 +16,8 @@ public class LoginView extends BaseView {
 
     public LoginView(final Context context) {
         super(context);
-        activity = (MainActivity)context;
         activity.setContentView(R.layout.login_activity);
 
-        app = activity.getApp();
         usernameText = activity.findViewById(R.id.username);
         passwordText = activity.findViewById(R.id.password);
 

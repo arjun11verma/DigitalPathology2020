@@ -2,6 +2,7 @@ package com.example.digitalpath2020;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.mongodb.sync.SyncConfiguration;
 
 public class AfterCaptureView extends BaseView {
@@ -48,14 +50,23 @@ public class AfterCaptureView extends BaseView {
                     public void execute(Realm realm) {
                         ObjectId id = new ObjectId();
                         ImageSet imgSet = realm.createObject(ImageSet.class, id);
+
                         imgSet.setCancer(activity.getCancer());
                         imgSet.setName(activity.getName());
                         imgSet.setSlide(activity.getSlide());
                         imgSet.setUsername(activity.getUsername());
-                    }
-                });
 
+                        for(int i = 0; i < bitArr.length ; i++) {
+                            ImageObject imgObj = realm.createEmbeddedObject(ImageObject.class, imgSet, "imageObjects");
+                            imgObj.setImage(toByteArray(bitArr[i]));
+                            imgObj.setImageType("JPEG");
+                        }
+                    }
+
+                });
                 mongoRealm.close();
+
+                activity.changeView(new PostUploadView(activity));
             }
         });
 

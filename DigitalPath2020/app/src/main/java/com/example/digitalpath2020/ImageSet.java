@@ -1,9 +1,11 @@
 package com.example.digitalpath2020;
 
 import android.graphics.Bitmap;
+import android.media.Image;
 
 import org.bson.types.ObjectId;
 
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.RealmField;
@@ -22,15 +24,30 @@ public class ImageSet extends RealmObject {
     private String slide;
     private String cancer;
 
+    RealmList<ImageObject> imageObjects = new RealmList<ImageObject>();
+
     public ImageSet() {
         super();
     }
 
-    public ImageSet(String username, String name, String slide, String cancer) {
+    public ImageSet(String username, String name, String slide, String cancer, RealmList<ImageObject> imageObjects) {
         super();
         this.username = username;
         this.slide = slide;
         this.cancer = cancer;
+        this.imageObjects = imageObjects;
+    }
+
+    public RealmList<ImageObject> getImageObjects() {
+        return imageObjects;
+    }
+
+    public void setImageObjects(RealmList<ImageObject> imageObjects) {
+        this.imageObjects = imageObjects;
+    }
+
+    public void addImageObject(ImageObject obj) {
+        imageObjects.add(obj);
     }
 
     public ObjectId get_id() {
