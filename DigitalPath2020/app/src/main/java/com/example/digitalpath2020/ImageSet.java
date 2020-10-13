@@ -1,29 +1,36 @@
 package com.example.digitalpath2020;
 
+import android.graphics.Bitmap;
+
 import org.bson.types.ObjectId;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmField;
+import io.realm.annotations.Required;
 
-public class Images extends RealmObject {
+public class ImageSet extends RealmObject {
     @PrimaryKey
-    private ObjectId _id = new ObjectId();
-    private String _partition = "DigitalPath2020";
+    private ObjectId _id;
+    private String _partition;
+
+    @Required
     private String username;
     private String name;
+
+    @Required
     private String slide;
     private String cancer;
-    private byte[] imgArr;
 
-    public Images() {}
-
-    public Images(String _partition, String username, String name, String slide, String cancer, byte[] imgArr) {
+    public ImageSet() {
         super();
-        this._partition = _partition;
+    }
+
+    public ImageSet(String username, String name, String slide, String cancer) {
+        super();
         this.username = username;
         this.slide = slide;
         this.cancer = cancer;
-        this.imgArr = imgArr;
     }
 
     public ObjectId get_id() {
@@ -72,13 +79,5 @@ public class Images extends RealmObject {
 
     public void setCancer(String cancer) {
         this.cancer = cancer;
-    }
-
-    public byte[] getImgArr() {
-        return imgArr;
-    }
-
-    public void setImgArr(byte[] imgArr) {
-        this.imgArr = imgArr;
     }
 }
