@@ -22,13 +22,14 @@ import io.realm.mongodb.App;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCameraView cameraView; // View that will be accessing the camera, taking pictures and displaying them
-    private Mat mRGBA, baseScreen; // Mat objects that will act as temporary storage for camera data
+    private Mat baseScreen; // Mat objects that will act as temporary storage for camera data
     private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading
+    private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
 
     private int pTimer = 0; // measures the amount of pictures that have been taken
-    private int maxNumImages = 2; // the number of pictures that will be taken
+    private int maxNumImages = 50; // the maximum number of pictures that will be taken
     private int delay = 2000; // delay until camera starts in milliseconds
-    private int period = 2000; // period of time between each picture being taken
+    private int period = 7000; // period of time between each picture being taken
     private Timer timer;
     private Task timerTask; // task to be executed that will take in and do rudimentary processing on images
     private boolean clicked = false; // prevents a crash by stopping the button after it has been clicked once
@@ -88,6 +89,21 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    public void stopCamera() {
+        timer.cancel(); // stops the timer
+        timer.purge(); // makes the timertask stop occuring
+        cameraView.disconnectCamera();
+        cameraView.disableView();
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                check = false;
+                changeView(new AfterCaptureView(activity)); // goes to the after capture page after the set number of images has been captured
+            }
+        });
+    }
+
     public void resetClick()
     {
         clicked = false;
@@ -105,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        mRGBA = inputFrame.rgba(); // updates the system with each frame the android camera captures
+        baseFrame = inputFrame; // updates the system with each frame the android camera captures
         if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken.
         {
             timer.cancel(); // stops the timer
@@ -168,8 +184,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         matList.add(mat);
     }
 
-    public Mat getmRGBA() {
-        return mRGBA;
+    public CameraBridgeViewBase.CvCameraViewFrame getBaseFrame() {
+        return baseFrame;
     }
 
     public void setpTimer(int x) {

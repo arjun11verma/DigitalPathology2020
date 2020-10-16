@@ -18,5 +18,12 @@ public class MainView extends BaseView {
                 activity.buttonAction();
             }
         });
+
+        activity.findViewById(R.id.stopTheCameraBtn).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.stopCamera();
+            }
+        });
     }
 }

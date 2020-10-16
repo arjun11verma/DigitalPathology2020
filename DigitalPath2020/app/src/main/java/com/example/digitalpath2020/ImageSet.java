@@ -1,14 +1,10 @@
 package com.example.digitalpath2020;
 
-import android.graphics.Bitmap;
-import android.media.Image;
-
 import org.bson.types.ObjectId;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
-import io.realm.annotations.RealmField;
 import io.realm.annotations.Required;
 
 public class ImageSet extends RealmObject {

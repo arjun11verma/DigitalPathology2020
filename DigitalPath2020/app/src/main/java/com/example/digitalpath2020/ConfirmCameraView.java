@@ -39,15 +39,15 @@ public class ConfirmCameraView extends BaseView {
                 String patient = patientName.getText().toString();
 
                 if(slide.isEmpty()) {
-                    slideName.setError("Please enter a valid slide name");
+                    slideName.setError("Please enter a valid slide name"); // checks if the slide name is valid
                     isValid = false;
                 }
                 if(cancer.isEmpty()) {
-                    cancerName.setError("Please enter a valid cancer name");
+                    cancerName.setError("Please enter a valid cancer name"); // checks if the cancer name is valid
                     isValid = false;
                 }
                 if(patient.isEmpty()) {
-                    patientName.setError("Please enter a valid patient name");
+                    patientName.setError("Please enter a valid patient name"); // checks if the patient name is valid
                     isValid = false;
                 }
 
@@ -55,7 +55,7 @@ public class ConfirmCameraView extends BaseView {
                     activity.setName(patient);
                     activity.setCancer(cancer);
                     activity.setSlide(slide);
-                    activity.changeView(new MainView(activity));
+                    activity.changeView(new MainView(activity)); // switches to picture capturing page
                 }
             }
         });
@@ -64,7 +64,7 @@ public class ConfirmCameraView extends BaseView {
     private void testCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         try {
-            activity.startActivityForResult(takePictureIntent, 1);
+            activity.startActivityForResult(takePictureIntent, 1); // opens up Android camera for camera calibration
         } catch (ActivityNotFoundException e) {
             System.out.println("Couldn't do it, sorry");
         }

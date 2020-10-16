@@ -15,21 +15,9 @@ public class Task extends TimerTask {
         this.activity = activity;
     }
 
-    public int getTimer() {
-        return timer;
-    }
-
-    public void setmRGBA(Mat m) {
-        mRGBA = m;
-    }
-
-    public Mat getmRGBA() {
-        return mRGBA;
-    }
-
     @Override
     public void run() {
-        mRGBA = activity.getmRGBA();
+        mRGBA = activity.getBaseFrame().rgba();
         mRGBAT = mRGBA.t();
         Core.flip(mRGBA.t(), mRGBAT, 1);
         Imgproc.resize(mRGBAT, mRGBAT, mRGBA.size());

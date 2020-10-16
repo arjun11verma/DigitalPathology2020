@@ -5,10 +5,8 @@ import android.view.View;
 import android.widget.EditText;
 
 import io.realm.mongodb.App;
-import io.realm.mongodb.Credentials;
 
 public class CreateAccountView extends BaseView {
-    private Credentials connectCred;
     private boolean isValid = true;
     private EditText usernameText;
     private EditText passwordText;
@@ -35,22 +33,22 @@ public class CreateAccountView extends BaseView {
         String password = passwordText.getText().toString();
 
         if (username.isEmpty()) {
-            usernameText.setError("Please enter a valid username!");
+            usernameText.setError("Please enter a valid email!"); // checks if username is valid
             isValid = false;
         }
 
         if (password.isEmpty()) {
-            passwordText.setError("Please enter a valid password!");
+            passwordText.setError("Please enter a valid password!"); // checks if password is valid
             isValid = false;
         }
 
         if(isValid) {
             app.getEmailPassword().registerUserAsync(username, password, new App.Callback() {
                 @Override
-                public void onResult(App.Result result) {
+                public void onResult(App.Result result) { // makes an async call to the database to register a user
                     if(result.isSuccess()) {
                         System.out.println("Account Creation Succeeded.");
-                        activity.changeView(new LoginView(activity));
+                        activity.changeView(new LoginView(activity)); // switches to the login page
                     }
                     else {
                         usernameText.setError("Please enter a valid email.");

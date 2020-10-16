@@ -2,7 +2,6 @@ package com.example.digitalpath2020;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.media.Image;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -12,16 +11,12 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import io.realm.Realm;
-import io.realm.RealmList;
 import io.realm.mongodb.sync.SyncConfiguration;
 
 public class AfterCaptureView extends BaseView {
-    private String partitionKey = "DigitalPath2020";
-    private Bitmap[] bitArr = new Bitmap[activity.getMatList().size() - 1];
+    private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // list of the captured images
     
     public AfterCaptureView(Context context) {
         super(context);
@@ -29,36 +24,36 @@ public class AfterCaptureView extends BaseView {
 
         LinearLayout lay = activity.findViewById(R.id.imageLayout);
 
-        for(int i = 0; i < activity.getMatList().size() - 1; i++)
+        for(int i = 0; i < activity.getMatList().size(); i++)
         {
             bitArr[i] = (toBitmap(activity.getMatList().get(i)));
             ImageView view = new ImageView(activity);
             view.setImageBitmap(bitArr[i]);
             view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
-            lay.addView(view);
+            lay.addView(view); // updates post view with all of the images captured so the client can confirm their quality
         }
 
         activity.findViewById(R.id.uploadImgBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 SyncConfiguration config = new SyncConfiguration.Builder(activity.getApp().currentUser(), "digitalpath").build();
-                Realm mongoRealm = Realm.getInstance(config);
+                Realm mongoRealm = Realm.getInstance(config); // gets an instance of the MongoDB realm based off of the current logged in user
 
                 mongoRealm.executeTransactionAsync(new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
                         ObjectId id = new ObjectId();
-                        ImageSet imgSet = realm.createObject(ImageSet.class, id);
+                        ImageSet imgSet = realm.createObject(ImageSet.class, id); // creates an ImageSet object in MongoDB
 
                         imgSet.setCancer(activity.getCancer());
                         imgSet.setName(activity.getName());
                         imgSet.setSlide(activity.getSlide());
                         imgSet.setUsername(activity.getUsername());
 
-                        for(int i = 0; i < bitArr.length ; i++) {
-                            ImageObject imgObj = realm.createEmbeddedObject(ImageObject.class, imgSet, "imageObjects");
-                            imgObj.setImage(toByteArray(bitArr[i]));
+                        for(int i = 0; i < bitArr.length; i++) { // uploads the image objects to the ImageSet object in MongoDB
+                            ImageObject imgObj = realm.createEmbeddedObject(ImageObject.class, imgSet, "imageObjects"); // uploads the object
+                            imgObj.setImage(toByteArray(bitArr[i])); // uploads the image data
                             imgObj.setImageType("JPEG");
                         }
                     }
@@ -89,7 +84,7 @@ public class AfterCaptureView extends BaseView {
     public byte[] toByteArray(Bitmap m)
     {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        m.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+        m.compress(Bitmap.CompressFormat.JPEG, 100, bos); // compresses image file so its binary data can fit reasonably on the database
         return bos.toByteArray();
     }
 }
