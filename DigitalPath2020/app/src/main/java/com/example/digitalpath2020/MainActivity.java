@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private int pTimer = 0; // measures the amount of pictures that have been taken
     private int maxNumImages = 50; // the maximum number of pictures that will be taken
     private int delay = 2000; // delay until camera starts in milliseconds
-    private int period = 7000; // period of time between each picture being taken
+    private int period = 5000; // period of time between each picture being taken
     private Timer timer;
     private Task timerTask; // task to be executed that will take in and do rudimentary processing on images
     private boolean clicked = false; // prevents a crash by stopping the button after it has been clicked once
