@@ -1,16 +1,35 @@
 from removeblackspace import removeBlackSpace as rbs
+import cv2 
+import numpy as np
 
 imgproc = rbs()
 
+images = []
+
 base_file_name = './DigPathSlideImages/'
 
-clean_img = imgproc.removeBlackSpace(base_file_name + 'download (18).jpg')
+for i in range(12, 18):
+    images.append(imgproc.removeBlackSpace(base_file_name + 'download (' + str(i) + ').jpg'))
 
-clean_img = imgproc.removeBlackSpace(base_file_name + 'download (2).jpg')
+stitch_one = (imgproc.stitchImages(images))
 
-imgproc.displayImage(clean_img)
+kernel_data = []
 
-#rbs.displayImage(base_file_name + 'download (13).jpg')
+dim = 3
+factor = 10
+for i in range(dim*dim):
+    kernel_data.append(-1/factor)
+
+kernel_data[int(dim*dim/2)] = 0.9
+
+sharpening_kernel = np.array(kernel_data).reshape((dim, dim))
+
+print(sharpening_kernel)
+
+imgproc.displayImage(stitch_one + imgproc.twoDimConvolution(stitch_one, sharpening_kernel))
+
+
+
 
 
 

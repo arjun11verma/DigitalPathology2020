@@ -1,21 +1,14 @@
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import image
-from matplotlib import pyplot
-
 import json
 import base64
 from bson import ObjectId
-
-from imgproc import imgproc as imgpr
-from PIL import Image
-
 from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 from flask_pymongo import PyMongo
-
+from flask_ngrok import run_with_ngrok
 from ast import literal_eval
+
+# Use Heroku to deploy this, or maybe Google Cloud or Google Cloud App Engine, or maybe Amazon EC2
 
 app = Flask(__name__)
 
@@ -26,23 +19,6 @@ cors = CORS(app)
 mongo = PyMongo(app, uri = mongoUri)
 
 images = mongo.db.ImageSet
-
-@app.route('/processImages', methods = ['POST'])
-def processImages():
-   post_data = (literal_eval(request.data.decode('utf8')))
-   name = str(post_data['name'])
-
-   data = images.find_one_or_404({"name": name})
-   base_data = data["imageObjects"]
-
-   img_data = []
-
-   for img in base_data:
-      img_data.append(imgpr.toArray(img['image']))
-   
-   pyplot.imshow(img_data[0]) #not working for some reason, I might have to do some stuff
-   
-   return "Okay, you made a POST request. You're cool now."
 
 @app.route('/returnImages', methods = ['POST'])
 def returnImages():
@@ -57,7 +33,17 @@ def returnImages():
 
    return base64.b64encode(rendered_image)
 
+@app.route('/acceptImages', methods = ['POST'])
+def acceptImages():
+   post_data = (literal_eval(request.data.decode('utf8')))
    
+   img_data = post_data["0"]
+   print(len(img_data))
+
+   return "Data posted successfully!"
+
+run_with_ngrok(app)
+app.run()
 
    
    

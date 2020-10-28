@@ -2,11 +2,16 @@ package com.example.digitalpath2020;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
 import org.bson.types.ObjectId;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
@@ -17,6 +22,7 @@ import io.realm.mongodb.sync.SyncConfiguration;
 
 public class AfterCaptureView extends BaseView {
     private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // list of the captured images
+    private byte[][] byteArr = new byte[activity.getMatList().size()][];
     
     public AfterCaptureView(Context context) {
         super(context);
@@ -32,36 +38,31 @@ public class AfterCaptureView extends BaseView {
             view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
             lay.addView(view); // updates post view with all of the images captured so the client can confirm their quality
+
+            byteArr[i] = toByteArray(bitArr[i]);
+
+            System.out.println(byteArr[i].length);
         }
 
         activity.findViewById(R.id.uploadImgBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                SyncConfiguration config = new SyncConfiguration.Builder(activity.getApp().currentUser(), "digitalpath").build();
-                Realm mongoRealm = Realm.getInstance(config); // gets an instance of the MongoDB realm based off of the current logged in user
+                JSONObject object = new JSONObject();
 
-                mongoRealm.executeTransactionAsync(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        ObjectId id = new ObjectId();
-                        ImageSet imgSet = realm.createObject(ImageSet.class, id); // creates an ImageSet object in MongoDB
+                try {
+                    object.put("name", activity.getName());
+                    object.put("cancer", activity.getCancer());
+                    object.put("slide", activity.getSlide());
 
-                        imgSet.setCancer(activity.getCancer());
-                        imgSet.setName(activity.getName());
-                        imgSet.setSlide(activity.getSlide());
-                        imgSet.setUsername(activity.getUsername());
-
-                        for(int i = 0; i < bitArr.length; i++) { // uploads the image objects to the ImageSet object in MongoDB
-                            ImageObject imgObj = realm.createEmbeddedObject(ImageObject.class, imgSet, "imageObjects"); // uploads the object
-                            imgObj.setImage(toByteArray(bitArr[i])); // uploads the image data
-                            imgObj.setImageType("JPEG");
-                        }
+                    for(int i = 0; i < bitArr.length; i++) {
+                        String tag = "" + i;
+                        object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
                     }
+                } catch (JSONException e) {
+                    System.out.println(e);
+                }
 
-                });
-                mongoRealm.close();
-
-                activity.changeView(new PostUploadView(activity));
+                activity.getServerConnection().makePost(object);
             }
         });
 
@@ -86,5 +87,37 @@ public class AfterCaptureView extends BaseView {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         m.compress(Bitmap.CompressFormat.JPEG, 100, bos); // compresses image file so its binary data can fit reasonably on the database
         return bos.toByteArray();
+    }
+
+    public void serverUpload(JSONObject object) {
+        activity.getServerConnection().makePost(object);
+    }
+
+    public void mongoUpload() {
+        SyncConfiguration config = new SyncConfiguration.Builder(activity.getApp().currentUser(), "digitalpath").build();
+        Realm mongoRealm = Realm.getInstance(config); // gets an instance of the MongoDB realm based off of the current logged in user
+
+        mongoRealm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                ObjectId id = new ObjectId();
+                ImageSet imgSet = realm.createObject(ImageSet.class, id); // creates an ImageSet object in MongoDB
+
+                imgSet.setCancer(activity.getCancer());
+                imgSet.setName(activity.getName());
+                imgSet.setSlide(activity.getSlide());
+                imgSet.setUsername(activity.getUsername());
+
+                for(int i = 0; i < bitArr.length; i++) { // uploads the image objects to the ImageSet object in MongoDB
+                    ImageObject imgObj = realm.createEmbeddedObject(ImageObject.class, imgSet, "imageObjects"); // uploads the object
+                    imgObj.setImage(toByteArray(bitArr[i])); // uploads the image data
+                    imgObj.setImageType("JPEG");
+                }
+            }
+
+        });
+        mongoRealm.close();
+
+        activity.changeView(new PostUploadView(activity));
     }
 }

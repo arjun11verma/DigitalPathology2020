@@ -10,7 +10,7 @@ class Homepage extends Component {
     }
 
     componentDidMount = () => {
-        this.processImages();
+        this.printImages();
     }
 
     printImages = () => {
@@ -26,8 +26,6 @@ class Homepage extends Component {
                 this.setState({
                     imgList: tempList
                 });
-
-                console.log(this.state.imgList);
             });
         }
     }

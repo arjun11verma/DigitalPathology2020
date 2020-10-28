@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private MDatabase database; // AWS database to be connected to through the MongoDB client
     private String username; // user data
     private String slide, cancer, name; // slide image/user data
+    private ServerConnect serverConnection;
 
     MainActivity activity = this;
     private BaseView currentView; // current page of the app
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initDB();
+        serverConnection = new ServerConnect(this);
+
         if(check) {
             changeView(new LoginView(this));
         }
@@ -225,4 +228,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void setUsername(String username) {
         this.username = username;
     }
+
+    public ServerConnect getServerConnection() { return serverConnection; }
 }
