@@ -6,6 +6,7 @@ import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
@@ -57,12 +58,23 @@ public class AfterCaptureView extends BaseView {
                     for(int i = 0; i < bitArr.length; i++) {
                         String tag = "" + i;
                         object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
+                        System.out.println(i);
                     }
                 } catch (JSONException e) {
                     System.out.println(e);
                 }
 
+                TextView upload = activity.findViewById(R.id.uploading);
+                upload.setText("Uploading...");
+
                 activity.getServerConnection().makePost(object);
+
+                while(true) {
+                    if (activity.getServerConnection().getDone()) {
+                        activity.changeView(new PostUploadView(activity));
+                        break;
+                    }
+                }
             }
         });
 

@@ -17,14 +17,14 @@ import java.util.Map;
 
 public class ServerConnect {
     private RequestQueue queue;
-    private String serverUrl = "http://1b40d83daae4.ngrok.io";
+    private String serverUrl = "http://ef5bd2cc8acc.ngrok.io";
     private MainActivity activity;
     private ImageLoader imageLoader;
+    private boolean done = false;
 
     public ServerConnect(MainActivity activity) {
         this.activity = activity;
         queue = Volley.newRequestQueue(activity);
-        queue.start();
     }
 
     public void makePost(JSONObject postObject) {
@@ -33,15 +33,21 @@ public class ServerConnect {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                done = true;
                 System.out.println("Post successful");
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                done = true;
                 System.out.println(error);
             }
         });
 
         queue.add(request);
+    }
+
+    public boolean getDone() {
+        return done;
     }
 }
