@@ -8,7 +8,7 @@ from flask_cors import CORS, cross_origin
 from flask_pymongo import PyMongo
 from flask_ngrok import run_with_ngrok
 
-from removeblackspace import ImageProcessing
+from ImageStichAlgorithm.removeblackspace import removeBlackSpace
 
 # Use Heroku to deploy this, or maybe Google Cloud or Google Cloud App Engine, or maybe Amazon EC2
 
@@ -22,7 +22,7 @@ mongo = PyMongo(app, uri = mongoUri)
 
 images = mongo.db.ImageSet
 
-imgproc = ImageProcessing()
+imgproc = removeBlackSpace()
 
 @app.route('/returnImages', methods = ['POST'])
 def returnImages():

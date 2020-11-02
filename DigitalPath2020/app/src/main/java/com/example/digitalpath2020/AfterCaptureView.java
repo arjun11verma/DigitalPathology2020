@@ -2,14 +2,13 @@ package com.example.digitalpath2020;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.CountDownTimer;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.bson.BSONObject;
-import org.bson.BasicBSONObject;
 import org.bson.types.ObjectId;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,6 +23,7 @@ import io.realm.mongodb.sync.SyncConfiguration;
 public class AfterCaptureView extends BaseView {
     private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // list of the captured images
     private byte[][] byteArr = new byte[activity.getMatList().size()][];
+    private boolean clicked = false;
     
     public AfterCaptureView(Context context) {
         super(context);
@@ -48,32 +48,39 @@ public class AfterCaptureView extends BaseView {
         activity.findViewById(R.id.uploadImgBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                JSONObject object = new JSONObject();
+                if(!clicked) {
+                    TextView upload = activity.findViewById(R.id.uploading);
+                    upload.setText("Uploading...");
 
-                try {
-                    object.put("name", activity.getName());
-                    object.put("cancer", activity.getCancer());
-                    object.put("slide", activity.getSlide());
+                    JSONObject object = new JSONObject();
 
-                    for(int i = 0; i < bitArr.length; i++) {
-                        String tag = "" + i;
-                        object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
-                        System.out.println(i);
+                    try {
+                        object.put("name", activity.getName());
+                        object.put("cancer", activity.getCancer());
+                        object.put("slide", activity.getSlide());
+
+                        for (int i = 0; i < bitArr.length; i++) {
+                            String tag = "" + i;
+                            object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
+                            System.out.println(i);
+                        }
+                    } catch (JSONException e) {
+                        System.out.println(e);
                     }
-                } catch (JSONException e) {
-                    System.out.println(e);
-                }
 
-                TextView upload = activity.findViewById(R.id.uploading);
-                upload.setText("Uploading...");
+                    clicked = true;
 
-                activity.getServerConnection().makePost(object);
+                    activity.getServerConnection().makePost(object);
 
-                while(true) {
-                    if (activity.getServerConnection().getDone()) {
-                        activity.changeView(new PostUploadView(activity));
-                        break;
-                    }
+                    new CountDownTimer(bitArr.length * 1000, 1000) {
+                        public void onFinish() {
+                            activity.changeView(new PostUploadView(activity));
+                        }
+
+                        public void onTick(long millisUntilFinished) {
+
+                        }
+                    }.start();
                 }
             }
         });

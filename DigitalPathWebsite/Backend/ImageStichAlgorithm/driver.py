@@ -8,7 +8,7 @@ images = []
 
 base_file_name = './DigPathSlideImages/'
 
-for i in range(12, 18):
+for i in range(2, 18):
     images.append(imgproc.removeBlackSpace(base_file_name + 'download (' + str(i) + ').jpg'))
 
 stitch_one = (imgproc.stitchImages(images))
@@ -20,7 +20,7 @@ factor = 10
 for i in range(dim*dim):
     kernel_data.append(-1/factor)
 
-kernel_data[int(dim*dim/2)] = 0.9
+kernel_data[int(dim*dim/2)] = (factor-1)/(factor)
 
 sharpening_kernel = np.array(kernel_data).reshape((dim, dim))
 

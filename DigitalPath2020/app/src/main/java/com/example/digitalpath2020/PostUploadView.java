@@ -19,6 +19,7 @@ public class PostUploadView extends BaseView {
             @Override
             public void onClick(View v) {
                 activity.resetClick();
+                activity.getServerConnection().setDone();
                 activity.changeView(new MainView(activity));
             }
         });
