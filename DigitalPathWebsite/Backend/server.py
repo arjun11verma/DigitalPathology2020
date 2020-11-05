@@ -46,7 +46,7 @@ def acceptImages():
       img_list.append(imgproc.base64ToArray(post_data[str(i)]))
    
    for img in img_list:
-      img = imgproc.removeBlackSpace(img)
+      img = imgproc.removeBlackSpace(img, post_data['name'])
    
    slide_image = imgproc.stitchImages(img_list)
 

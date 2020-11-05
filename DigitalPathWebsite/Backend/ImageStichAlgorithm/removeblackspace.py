@@ -7,6 +7,7 @@ def crop(img_arr, top, left, bottom, right):
 
 
 class removeBlackSpace:
+    num_images = 0
     stopRowTop = 0
     stopColLeft = 0
     stopRowBottom = 0
@@ -26,7 +27,7 @@ class removeBlackSpace:
         cv2.imshow("Slide Image", slide_image)
         cv2.waitKey(0)
 
-    def removeBlackSpace(self, img_url):
+    def removeBlackSpace(self, img_url, img_name):
         if(isinstance(img_url, str)):
             slide_image = cv2.imread(img_url)
         else:
@@ -72,6 +73,10 @@ class removeBlackSpace:
 
         new_image = crop(slide_image, removeBlackSpace.stopRowTop, removeBlackSpace.stopColLeft,
                         removeBlackSpace.stopRowBottom, removeBlackSpace.stopColRight)
+        
+        removeBlackSpace.num_images += 1
+        img_name = img_name + str(removeBlackSpace.num_images) + ".jpg"
+        cv2.imwrite(img_name, new_image)
 
         return new_image
 
