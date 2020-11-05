@@ -9,6 +9,7 @@ from flask_pymongo import PyMongo
 from flask_ngrok import run_with_ngrok
 
 from ImageStichAlgorithm.removeblackspace import removeBlackSpace
+import imutils
 
 # Use Heroku to deploy this, or maybe Google Cloud or Google Cloud App Engine, or maybe Amazon EC2
 
@@ -46,7 +47,7 @@ def acceptImages():
       img_list.append(imgproc.base64ToArray(post_data[str(i)]))
    
    for img in img_list:
-      img = imgproc.removeBlackSpace(img, post_data['name'])
+      img = imgproc.removeBlackSpace(img, post_data['name'], True)
    
    slide_image = imgproc.stitchImages(img_list)
 

@@ -9,7 +9,7 @@ images = []
 base_file_name = './DigPathSlideImages/'
 
 for i in range(2, 18):
-    images.append(imgproc.removeBlackSpace(base_file_name + 'download (' + str(i) + ').jpg'))
+    images.append(imgproc.removeBlackSpace(base_file_name + 'download (' + str(i) + ').jpg', 'name', False))
 
 stitch_one = (imgproc.stitchImages(images))
 

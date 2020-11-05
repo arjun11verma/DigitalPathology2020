@@ -27,12 +27,12 @@ class removeBlackSpace:
         cv2.imshow("Slide Image", slide_image)
         cv2.waitKey(0)
 
-    def removeBlackSpace(self, img_url, img_name):
+    def removeBlackSpace(self, img_url, img_name, save_image):
         if(isinstance(img_url, str)):
             slide_image = cv2.imread(img_url)
         else:
             slide_image = img_url
-        
+
         limit = 30
 
         bin_img = cv2.cvtColor(slide_image, cv2.COLOR_BGR2GRAY)
@@ -76,7 +76,8 @@ class removeBlackSpace:
         
         removeBlackSpace.num_images += 1
         img_name = img_name + str(removeBlackSpace.num_images) + ".jpg"
-        cv2.imwrite(img_name, new_image)
+
+        if(save_image): cv2.imwrite(img_name, new_image)
 
         return new_image
 
