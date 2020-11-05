@@ -20,7 +20,7 @@ public class PostUploadView extends BaseView {
             public void onClick(View v) {
                 activity.resetClick();
                 activity.getServerConnection().setDone();
-                activity.changeView(new MainView(activity));
+                activity.changeView(new ConfirmCameraView(activity));
             }
         });
     }

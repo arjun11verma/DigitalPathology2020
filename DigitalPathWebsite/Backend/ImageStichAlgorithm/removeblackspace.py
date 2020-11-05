@@ -5,14 +5,14 @@ import base64
 def crop(img_arr, top, left, bottom, right):
     return img_arr[top:bottom, left:right]
 
-
 class removeBlackSpace:
     num_images = 0
     stopRowTop = 0
     stopColLeft = 0
     stopRowBottom = 0
     stopColRight = 0
-    processed = True
+    processed = False
+    divider = 0
     stitcher = cv2.Stitcher.create()
 
     def __init__(self):
@@ -33,12 +33,12 @@ class removeBlackSpace:
         else:
             slide_image = img_url
 
-        limit = 30
+        limit = 10
 
         bin_img = cv2.cvtColor(slide_image, cv2.COLOR_BGR2GRAY)
         threshold, bin_img = cv2.threshold(bin_img, limit, 255, cv2.THRESH_BINARY)
 
-        if(removeBlackSpace.processed):
+        if(not removeBlackSpace.processed):
             removeBlackSpace.stopRowTop = 0
             topFlag = True
             removeBlackSpace.stopColLeft = 0
@@ -69,10 +69,16 @@ class removeBlackSpace:
                 if(not(leftFlag or rightFlag or topFlag or bottomFlag)):
                     break
             
-            removeBlackSpace.processed = False
+            inner_len = ((removeBlackSpace.stopRowBottom - removeBlackSpace.stopRowTop)*(1.4142))/2
+            divider = ((removeBlackSpace.stopRowBottom - removeBlackSpace.stopRowTop) - inner_len)/2
+            removeBlackSpace.divider = int(divider)
 
+            removeBlackSpace.processed = True
+        
         new_image = crop(slide_image, removeBlackSpace.stopRowTop, removeBlackSpace.stopColLeft,
-                        removeBlackSpace.stopRowBottom, removeBlackSpace.stopColRight)
+                            removeBlackSpace.stopRowBottom, removeBlackSpace.stopColRight)
+
+        new_image = crop(new_image, removeBlackSpace.divider, removeBlackSpace.divider, len(new_image) - removeBlackSpace.divider, len(new_image) - removeBlackSpace.divider)
         
         removeBlackSpace.num_images += 1
         img_name = img_name + str(removeBlackSpace.num_images) + ".jpg"

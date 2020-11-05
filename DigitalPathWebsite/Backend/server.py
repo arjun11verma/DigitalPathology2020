@@ -10,6 +10,7 @@ from flask_ngrok import run_with_ngrok
 
 from ImageStichAlgorithm.removeblackspace import removeBlackSpace
 import imutils
+import cv2
 
 # Use Heroku to deploy this, or maybe Google Cloud or Google Cloud App Engine, or maybe Amazon EC2
 
@@ -44,14 +45,12 @@ def acceptImages():
    img_list = []
    
    for i in range(len(post_data) - 3):
-      img_list.append(imgproc.base64ToArray(post_data[str(i)]))
-   
-   for img in img_list:
-      img = imgproc.removeBlackSpace(img, post_data['name'], True)
+      img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], True))
    
    slide_image = imgproc.stitchImages(img_list)
 
    imgproc.displayImage(slide_image)
+   cv2.imwrite("stitchedImage.jpg", slide_image)
    
    return "Data posted successfully!"
 
