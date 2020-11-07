@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 public class ServerConnect {
     private RequestQueue queue;
-    private String serverUrl = "http://ea7900efaffe.ngrok.io";
+    private String serverUrl = "http://bc735eb793a8.ngrok.io";
     private MainActivity activity;
     private boolean done = false;
 

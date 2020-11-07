@@ -105,3 +105,7 @@ class removeBlackSpace:
         img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
 
         return img
+    
+    def arrayToBase64(self, img_data):
+        retval, img_arr = cv2.imencode('.jpg', img_data)
+        return (base64.b64encode(img_arr))

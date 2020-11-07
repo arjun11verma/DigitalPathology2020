@@ -16,7 +16,7 @@ import cv2
 
 app = Flask(__name__)
 
-mongoUri = "mongodb+srv://averma332:Timeline123#@digpath2020.mujb1.mongodb.net/DigitalPathDB?retryWrites=true&w=majority"
+mongoUri = "mongodb+srv://averma332:Timeline123#@digpath2020.mujb1.mongodb.net/digitalpath2020?retryWrites=true&w=majority"
 
 cors = CORS(app)
 
@@ -26,8 +26,8 @@ images = mongo.db.ImageSet
 
 imgproc = removeBlackSpace()
 
-@app.route('/returnImages', methods = ['POST'])
-def returnImages():
+@app.route('/mongoImages', methods = ['POST'])
+def mongoImages():
    post_data = (literal_eval(request.data.decode('utf8')))
    index = int(post_data['index'])
 
@@ -42,15 +42,25 @@ def returnImages():
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
    post_data = (literal_eval(request.data.decode('utf8')))
+
    img_list = []
    
-   for i in range(len(post_data) - 3):
+   for i in range(len(post_data) - 4):
       img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], True))
    
    slide_image = imgproc.stitchImages(img_list)
 
    imgproc.displayImage(slide_image)
-   cv2.imwrite("stitchedImage.jpg", slide_image)
+   #cv2.imwrite("stitchedImage.jpg", slide_image)
+
+   username = post_data['username']
+   name = post_data['name']
+   slide_type = post_data['slide']
+   cancer_type = post_data['cancer']
+   stitched_image = imgproc.arrayToBase64(slide_image)
+
+   mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'image': stitched_image}
+   print(images.insert_one(mongo_document).inserted_id)
    
    return "Data posted successfully!"
 

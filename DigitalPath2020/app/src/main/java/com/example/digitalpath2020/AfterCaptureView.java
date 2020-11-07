@@ -58,6 +58,7 @@ public class AfterCaptureView extends BaseView {
                         object.put("name", activity.getName());
                         object.put("cancer", activity.getCancer());
                         object.put("slide", activity.getSlide());
+                        object.put("username", activity.getUsername());
 
                         for (int i = 0; i < bitArr.length; i++) {
                             String tag = "" + i;
