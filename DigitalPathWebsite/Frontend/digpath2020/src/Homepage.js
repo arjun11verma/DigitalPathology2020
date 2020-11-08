@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import axios from 'axios'
+import handlers from './ImageHandlers'
 
 class Homepage extends Component {
     constructor(props) {
@@ -10,7 +11,7 @@ class Homepage extends Component {
     }
 
     componentDidMount = () => {
-        this.printImages();
+        console.log(handlers.readOne({'username': "a"}));
     }
 
     printImages = () => {
@@ -31,9 +32,7 @@ class Homepage extends Component {
     }
 
     processImages = () => {
-        axios.post('http://127.0.0.1:5000/processImages', {'name': 'testuserone'}).then(res =>{
-            console.log(res.data);
-        });
+        
     }
 
     render() {

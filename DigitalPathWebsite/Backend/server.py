@@ -11,6 +11,7 @@ from flask_ngrok import run_with_ngrok
 from ImageStichAlgorithm.removeblackspace import removeBlackSpace
 import imutils
 import cv2
+import numpy as np
 
 # Use Heroku to deploy this, or maybe Google Cloud or Google Cloud App Engine, or maybe Amazon EC2
 
@@ -23,8 +24,6 @@ cors = CORS(app)
 mongo = PyMongo(app, uri = mongoUri)
 
 images = mongo.db.ImageSet
-
-imgproc = removeBlackSpace()
 
 @app.route('/mongoImages', methods = ['POST'])
 def mongoImages():
@@ -41,6 +40,8 @@ def mongoImages():
 
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
+   imgproc = removeBlackSpace()
+   
    post_data = (literal_eval(request.data.decode('utf8')))
 
    img_list = []
