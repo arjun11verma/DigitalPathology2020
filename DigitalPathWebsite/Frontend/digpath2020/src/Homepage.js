@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import axios from 'axios'
-import handlers from './ImageHandlers'
 
 class Homepage extends Component {
     constructor(props) {
@@ -11,28 +10,22 @@ class Homepage extends Component {
     }
 
     componentDidMount = () => {
-        console.log(handlers.readOne({'username': "a"}));
+        this.printImages();
     }
 
     printImages = () => {
-        for (var i = 0; i < 20; i++) {
-            axios.post('http://127.0.0.1:5000/returnImages', { 'index': i }).then(res => {
-                var imgData = "data:image/jpeg;base64," + (res.data);
-                var tempList = this.state.imgList;
+        axios.post('http://127.0.0.1:5000/displayImages', { 'username': 'arjun@gmail.com' }).then(res => {
+            var imgData = "data:image/jpeg;base64," + (res.data);
+            var tempList = this.state.imgList;
 
-                var img = React.createElement("img", {key: "image", src: imgData, width: 400, height: 400}, null);
+            var img = React.createElement("img", { key: "image", src: imgData, width: 400, height: 400 }, null);
 
-                tempList.push(img);
+            tempList.push(img);
 
-                this.setState({
-                    imgList: tempList
-                });
+            this.setState({
+                imgList: tempList
             });
-        }
-    }
-
-    processImages = () => {
-        
+        });
     }
 
     render() {

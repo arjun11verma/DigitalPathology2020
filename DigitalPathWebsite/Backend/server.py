@@ -41,7 +41,7 @@ def mongoImages():
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
    imgproc = removeBlackSpace()
-   
+
    post_data = (literal_eval(request.data.decode('utf8')))
 
    img_list = []
@@ -52,7 +52,6 @@ def acceptImages():
    slide_image = imgproc.stitchImages(img_list)
 
    imgproc.displayImage(slide_image)
-   #cv2.imwrite("stitchedImage.jpg", slide_image)
 
    username = post_data['username']
    name = post_data['name']
@@ -65,7 +64,18 @@ def acceptImages():
    
    return "Data posted successfully!"
 
-run_with_ngrok(app)
+@app.route('/displayImages', methods = ['POST'])
+def displayImages():
+   post_data = (literal_eval(request.data.decode('utf8')))
+   username = post_data['username']
+
+   data = images.find_one_or_404({"username": username})
+   img_data = data["image"]
+
+   return img_data
+
+
+#run_with_ngrok(app)
 app.run()
 
    
