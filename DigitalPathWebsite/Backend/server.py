@@ -53,6 +53,10 @@ def acceptImages():
 
    imgproc.displayImage(slide_image)
 
+   slide_image = slide_image + imgproc.sharpenImage(slide_image)
+
+   imgproc.displayImage(slide_image)
+
    username = post_data['username']
    name = post_data['name']
    slide_type = post_data['slide']
@@ -74,8 +78,7 @@ def displayImages():
 
    return img_data
 
-
-#run_with_ngrok(app)
+run_with_ngrok(app)
 app.run()
 
    

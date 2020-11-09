@@ -86,6 +86,24 @@ class removeBlackSpace:
         if(save_image): cv2.imwrite(img_name, new_image)
 
         return new_image
+    
+    def twoDimConvolution(self, slide_image, kernel):
+        new_img = cv2.filter2D(slide_image, -1, kernel)
+        return new_img
+    
+    def sharpenImage(self, img_data):
+        kernel_data = []
+
+        dim = 3
+        factor = 10
+        for i in range(dim*dim):
+            kernel_data.append(-1/factor)
+
+        kernel_data[int(dim*dim/2)] = (factor-1)/(factor)
+
+        sharpening_kernel = np.array(kernel_data).reshape((dim, dim))
+        
+        return cv2.filter2D(img_data, -1, sharpening_kernel)
 
     def stitchImages(self, slides):
         (status, result) = removeBlackSpace.stitcher.stitch(slides)
@@ -94,10 +112,6 @@ class removeBlackSpace:
             return result
         else:
             return 0
-
-    def twoDimConvolution(self, slide_image, kernel):
-        new_img = cv2.filter2D(slide_image, -1, kernel)
-        return new_img
 
     def base64ToArray(self, img_data):
         im_bytes = base64.b64decode(img_data)

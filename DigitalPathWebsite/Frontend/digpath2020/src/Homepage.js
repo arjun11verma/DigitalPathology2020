@@ -18,7 +18,7 @@ class Homepage extends Component {
             var imgData = "data:image/jpeg;base64," + (res.data);
             var tempList = this.state.imgList;
 
-            var img = React.createElement("img", { key: "image", src: imgData, width: 400, height: 400 }, null);
+            var img = React.createElement("img", { key: "image", src: imgData}, null);
 
             tempList.push(img);
 
