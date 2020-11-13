@@ -15,7 +15,10 @@ class Homepage extends Component {
 
     printImages = () => {
         axios.post('http://127.0.0.1:5000/displayImages', { 'username': 'arjun@gmail.com' }).then(res => {
-            var imgData = "data:image/jpeg;base64," + (res.data);
+            var response_data = res.data;
+            response_data = response_data['image_list'];
+
+            var imgData = "data:image/jpeg;base64," + (response_data[0]);
             var tempList = this.state.imgList;
 
             var img = React.createElement("img", { key: "image", src: imgData}, null);

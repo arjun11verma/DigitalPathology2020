@@ -2,6 +2,8 @@ import json
 from ast import literal_eval
 from bson import ObjectId
 
+from datetime import datetime
+
 from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
@@ -25,19 +27,6 @@ mongo = PyMongo(app, uri = mongoUri)
 
 images = mongo.db.ImageSet
 
-@app.route('/mongoImages', methods = ['POST'])
-def mongoImages():
-   post_data = (literal_eval(request.data.decode('utf8')))
-   index = int(post_data['index'])
-
-   data = images.find_one_or_404({"name": "testuserone"})
-   base_data = data["imageObjects"]
-
-   img = base_data[index]
-   rendered_image = img['image']
-
-   return rendered_image
-
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
    imgproc = removeBlackSpace()
@@ -51,8 +40,6 @@ def acceptImages():
    
    slide_image = imgproc.stitchImages(img_list)
 
-   imgproc.displayImage(slide_image)
-
    slide_image = slide_image + imgproc.sharpenImage(slide_image)
 
    imgproc.displayImage(slide_image)
@@ -61,10 +48,13 @@ def acceptImages():
    name = post_data['name']
    slide_type = post_data['slide']
    cancer_type = post_data['cancer']
+   time_stamp = (datetime.now()).strftime("%d/%m/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
-   mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'image': stitched_image}
-   print(images.insert_one(mongo_document).inserted_id)
+   if(len(slide_image) < 10000):
+      rand = 100
+      #mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image}
+      #print(images.insert_one(mongo_document).inserted_id)
    
    return "Data posted successfully!"
 
@@ -76,7 +66,13 @@ def displayImages():
    data = images.find_one_or_404({"username": username})
    img_data = data["image"]
 
-   return img_data
+   data = list(images.find({"username": username}))
+   img_data_new = []
+
+   for img in data:
+      img_data_new.append(str(img["image"], 'utf-8'))
+
+   return {"image_list": img_data_new}
 
 run_with_ngrok(app)
 app.run()

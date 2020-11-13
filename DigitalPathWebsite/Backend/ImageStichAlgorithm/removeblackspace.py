@@ -129,8 +129,6 @@ class removeBlackSpace:
         
         byte_list = np.array(byte_list)
         byte_list = byte_list.tobytes()
-
-        img = cv2.imdecode(np.frombuffer(byte_list, np.uint8), cv2.IMREAD_COLOR)
         byte_list = base64.b64encode(byte_list)
 
         return byte_list
