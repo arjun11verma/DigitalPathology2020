@@ -2,6 +2,7 @@ package com.example.digitalpath2020;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -89,6 +90,17 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             timer.schedule(timerTask, delay, period); // activates the timer and schedules the task
             cameraView.enableView(); // activates the camera
             clicked = true; // prevents the button from being clicked multiple times and crashing the system
+
+            Camera.Parameters parameters = cameraView.mCamera.getParameters();
+            cameraView.mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera camera) {
+                    System.out.println(success);
+                }
+            });
+
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            cameraView.mCamera.setParameters(parameters);
         }
     }
 

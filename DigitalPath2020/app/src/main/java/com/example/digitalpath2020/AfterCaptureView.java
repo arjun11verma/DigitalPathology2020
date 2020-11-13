@@ -74,16 +74,6 @@ public class AfterCaptureView extends BaseView {
                     activity.getServerConnection().makePost(object);
 
                     System.out.println("Images uploaded to server!");
-
-                    new CountDownTimer(bitArr.length * 1000, 1000) {
-                        public void onFinish() {
-                            activity.changeView(new PostUploadView(activity));
-                        }
-
-                        public void onTick(long millisUntilFinished) {
-
-                        }
-                    }.start();
                 }
             }
         });
@@ -140,6 +130,6 @@ public class AfterCaptureView extends BaseView {
         });
         mongoRealm.close();
 
-        activity.changeView(new PostUploadView(activity));
+        activity.changeView(new PostUploadView(activity, "Deprecated"));
     }
 }

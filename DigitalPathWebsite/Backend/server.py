@@ -34,15 +34,42 @@ def acceptImages():
    post_data = (literal_eval(request.data.decode('utf8')))
 
    img_list = []
+   inner_list = []
    
    for i in range(len(post_data) - 4):
-      img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], True))
+      img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], False))
    
+   inner_step = int(len(img_list)/4)
+   slice_end = 0
+
+   for i in range(0, len(img_list), inner_step):
+      slice_end = i + inner_step if (i+ inner_step < len(img_list)) else len(img_list)
+      if(len(img_list[i:slice_end]) > 0):
+         inner_list.append(img_list[i:slice_end])
+   
+   partial_stiches = []
+
+   for img_data in inner_list:
+      print("Partially stitched!")
+      temp_slide_image = imgproc.stitchImages(img_data)
+      imgproc.displayImage(temp_slide_image)
+      partial_stiches.append(temp_slide_image)
+   
+   slide_image = imgproc.stitchImages(partial_stiches)
+
+   slide_image = slide_image + imgproc.sharpenImage(slide_image)
+
+   imgproc.displayImage(slide_image)
+
+   print("Partial stitching over!")
+
    slide_image = imgproc.stitchImages(img_list)
 
    slide_image = slide_image + imgproc.sharpenImage(slide_image)
 
    imgproc.displayImage(slide_image)
+
+   print("Regular stitching over!")
 
    username = post_data['username']
    name = post_data['name']
@@ -51,12 +78,13 @@ def acceptImages():
    time_stamp = (datetime.now()).strftime("%d/%m/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
-   if(len(slide_image) < 10000):
+   if(1 == 1):
       rand = 100
-      #mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image}
-      #print(images.insert_one(mongo_document).inserted_id)
+      mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image}
+      print(images.insert_one(mongo_document).inserted_id)
+      return {'response': "Data posted successfully!"}
    
-   return "Data posted successfully!"
+   return {'response': "Data not posted right. You're gonna have to try again!"}
 
 @app.route('/displayImages', methods = ['POST'])
 def displayImages():

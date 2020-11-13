@@ -1,5 +1,7 @@
 package com.example.digitalpath2020;
 
+import android.hardware.Camera;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;

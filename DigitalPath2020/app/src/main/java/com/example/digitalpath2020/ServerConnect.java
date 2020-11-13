@@ -12,9 +12,10 @@ import org.json.JSONObject;
 
 public class ServerConnect {
     private RequestQueue queue;
-    private String serverUrl = "http://dbf52ece786e.ngrok.io";
+    private String serverUrl = "http://811052188231.ngrok.io";
     private MainActivity activity;
     private boolean done = false;
+    private boolean success = true;
 
     public ServerConnect(MainActivity activity) {
         this.activity = activity;
@@ -29,12 +30,14 @@ public class ServerConnect {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    System.out.println("Post successful");
+                    activity.changeView(new PostUploadView(activity, "Your upload was successful!"));
+                    System.out.println(response);
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    System.out.println("It might not be a perfect post, but we'll take it.");
+                    activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again."));
+                    success = false;
                     System.out.println(error);
                 }
             });
@@ -55,4 +58,6 @@ public class ServerConnect {
     public void setDone() {
         done = false;
     }
+
+    public boolean getSuccess() { return success; }
 }
