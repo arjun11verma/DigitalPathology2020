@@ -8,6 +8,9 @@ import org.opencv.android.JavaCameraView;
 public class MainView extends BaseView {
     public MainView(Context context) {
         super(context);
+
+        checkLoggedIn();
+
         activity.setContentView(R.layout.activity_main);
 
         activity.activateCamera((JavaCameraView)activity.findViewById(R.id.camera));

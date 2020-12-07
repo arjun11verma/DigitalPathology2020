@@ -22,11 +22,13 @@
         android:layout_width="340dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
+        android:textAlignment="center"
         android:text="Please click on the &quot;test camera&quot; button and align your camera with the microscope. Once it is aligned, click a picture and confirm that it is ok, and you will be returned to this page.  Please fill in the following fields below. After you've done this, click the start camera button and the app will begin taking pictures."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/previewCamera" />
+        app:layout_constraintTop_toBottomOf="@+id/previewCamera"
+        android:gravity="center_horizontal" />
 
     <EditText
         android:id="@+id/patientName"

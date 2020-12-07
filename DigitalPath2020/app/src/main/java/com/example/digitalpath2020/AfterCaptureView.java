@@ -2,12 +2,11 @@ package com.example.digitalpath2020;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.CountDownTimer;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 
 import org.bson.types.ObjectId;
 import org.json.JSONException;
@@ -24,10 +23,17 @@ public class AfterCaptureView extends BaseView {
     private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // list of the captured images
     private byte[][] byteArr = new byte[activity.getMatList().size()][];
     private boolean clicked = false;
+    private ProgressBar uploading;
     
     public AfterCaptureView(Context context) {
         super(context);
+
+        checkLoggedIn();
+
         activity.setContentView(R.layout.after_capture_activity);
+
+        uploading = activity.findViewById(R.id.uploadingBar);
+        uploading.setVisibility(View.GONE);
 
         LinearLayout lay = activity.findViewById(R.id.imageLayout);
 
@@ -49,8 +55,7 @@ public class AfterCaptureView extends BaseView {
             @Override
             public void onClick(View v) {
                 if(!clicked) {
-                    TextView upload = activity.findViewById(R.id.uploading);
-                    upload.setText("Uploading...");
+                    uploading.setVisibility(View.VISIBLE);
 
                     JSONObject object = new JSONObject();
 
@@ -99,10 +104,6 @@ public class AfterCaptureView extends BaseView {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         m.compress(Bitmap.CompressFormat.JPEG, 100, bos); // compresses image file so its binary data can fit reasonably on the database
         return bos.toByteArray();
-    }
-
-    public void serverUpload(JSONObject object) {
-        activity.getServerConnection().makePost(object);
     }
 
     public void mongoUpload() {

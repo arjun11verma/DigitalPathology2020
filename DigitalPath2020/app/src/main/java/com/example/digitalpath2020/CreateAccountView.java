@@ -16,7 +16,6 @@ public class CreateAccountView extends BaseView {
         activity = (MainActivity)context;
         activity.setContentView(R.layout.create_account_activity);
 
-        app = activity.getApp();
         usernameText = activity.findViewById(R.id.createUsername);
         passwordText = activity.findViewById(R.id.createPassword);
 

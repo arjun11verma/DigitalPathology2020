@@ -8,11 +8,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ServerConnect {
     private RequestQueue queue;
-    private String serverUrl = "http://811052188231.ngrok.io";
+    private String serverUrl = "http://ab48c13eb9ba.ngrok.io";
     private MainActivity activity;
     private boolean done = false;
     private boolean success = true;
@@ -30,7 +31,15 @@ public class ServerConnect {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    activity.changeView(new PostUploadView(activity, "Your upload was successful!"));
+                    try {
+                        if((response.get("response")).equals("Data not posted right. You're gonna have to try again!")) {
+                            activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again."));
+                        } else {
+                            activity.changeView(new PostUploadView(activity, "Your upload was successful!"));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     System.out.println(response);
                 }
             }, new Response.ErrorListener() {

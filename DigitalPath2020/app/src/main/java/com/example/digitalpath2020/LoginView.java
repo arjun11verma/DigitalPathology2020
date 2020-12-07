@@ -58,6 +58,7 @@ public class LoginView extends BaseView {
                     if (result.isSuccess()) {
                         activity.setUsername(username);
                         activity.changeView(new ConfirmCameraView(activity));
+                        activity.setLoggedIn(true);
                         System.out.println("Successfully logged into MongoDB. Nice!");
                     }
                     else {

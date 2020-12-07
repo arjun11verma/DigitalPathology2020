@@ -14,4 +14,10 @@ public abstract class BaseView extends View {
         activity = (MainActivity)context;
         app = activity.getApp();
     }
+
+    public void checkLoggedIn() {
+        if(activity.isLoggedIn()) {
+            activity.changeView(new LoginView(activity));
+        }
+    }
 }

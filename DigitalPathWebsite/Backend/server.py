@@ -16,6 +16,7 @@ import cv2
 import numpy as np
 
 # Use Heroku to deploy this, or maybe Google Cloud or Google Cloud App Engine, or maybe Amazon EC2
+# Definitely use one of the latter, this project has funding, so use it!
 
 app = Flask(__name__)
 
@@ -27,6 +28,11 @@ mongo = PyMongo(app, uri = mongoUri)
 
 images = mongo.db.ImageSet
 
+@app.route('/login', methods = ['POST'])
+def login():
+   login_status = False
+   return {'status': login_status}
+
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
    imgproc = removeBlackSpace()
@@ -37,31 +43,7 @@ def acceptImages():
    inner_list = []
    
    for i in range(len(post_data) - 4):
-      img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], False))
-   
-   inner_step = int(len(img_list)/4)
-   slice_end = 0
-
-   for i in range(0, len(img_list), inner_step):
-      slice_end = i + inner_step if (i+ inner_step < len(img_list)) else len(img_list)
-      if(len(img_list[i:slice_end]) > 0):
-         inner_list.append(img_list[i:slice_end])
-   
-   partial_stiches = []
-
-   for img_data in inner_list:
-      print("Partially stitched!")
-      temp_slide_image = imgproc.stitchImages(img_data)
-      imgproc.displayImage(temp_slide_image)
-      partial_stiches.append(temp_slide_image)
-   
-   slide_image = imgproc.stitchImages(partial_stiches)
-
-   slide_image = slide_image + imgproc.sharpenImage(slide_image)
-
-   imgproc.displayImage(slide_image)
-
-   print("Partial stitching over!")
+      img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], True))
 
    slide_image = imgproc.stitchImages(img_list)
 
@@ -71,6 +53,10 @@ def acceptImages():
 
    print("Regular stitching over!")
 
+   partial_stitch = partialStitching(imgproc, img_list)
+
+   print("Partial stitching over!") 
+
    username = post_data['username']
    name = post_data['name']
    slide_type = post_data['slide']
@@ -78,8 +64,10 @@ def acceptImages():
    time_stamp = (datetime.now()).strftime("%d/%m/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
-   if(1 == 1):
-      rand = 100
+   #slide_image = partial_stitch if len(partial_stitch) > len(slide_image) else slide_image
+   print(len(slide_image))
+
+   if(len(slide_image) >= 1000):
       mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image}
       print(images.insert_one(mongo_document).inserted_id)
       return {'response': "Data posted successfully!"}
@@ -101,6 +89,37 @@ def displayImages():
       img_data_new.append(str(img["image"], 'utf-8'))
 
    return {"image_list": img_data_new}
+
+def partialStitching(imgproc, img_list):
+   inner_list = []
+
+   inner_step = int(len(img_list)/4)
+   if(inner_step == 0): inner_step = 1
+   slice_end = 0
+
+   for i in range(0, len(img_list), inner_step):
+      slice_end = i + inner_step + 1 if (i + inner_step + 1 < len(img_list)) else len(img_list)
+      if(len(img_list[i:slice_end]) > 0):
+         inner_list.append(img_list[i:slice_end])
+   
+   partial_stiches = []
+
+   for img_data in inner_list:
+      print("Partially stitched!")
+      temp_slide_image = imgproc.stitchImages(img_data)
+      if(temp_slide_image.size != 0): 
+         imgproc.displayImage(temp_slide_image)
+         partial_stiches.append(temp_slide_image)
+   
+   slide_image = imgproc.stitchImages(partial_stiches)
+
+   slide_image = slide_image + imgproc.sharpenImage(slide_image)
+
+   imgproc.displayImage(slide_image)
+
+   print("Partial stitching over!")
+
+   return slide_image
 
 run_with_ngrok(app)
 app.run()

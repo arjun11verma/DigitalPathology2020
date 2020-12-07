@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import base64
+import os
 
 def crop(img_arr, top, left, bottom, right):
     return img_arr[top:bottom, left:right]
@@ -13,6 +14,7 @@ class removeBlackSpace:
     stopColRight = 0
     processed = False
     divider = 0
+    inner_len = 0
     stitcher = cv2.Stitcher.create()
 
     def __init__(self):
@@ -33,59 +35,13 @@ class removeBlackSpace:
         else:
             slide_image = img_url
 
-        limit = 10
-
-        bin_img = cv2.cvtColor(slide_image, cv2.COLOR_BGR2GRAY)
-        threshold, bin_img = cv2.threshold(bin_img, limit, 255, cv2.THRESH_BINARY)
-
-        if(not removeBlackSpace.processed):
-            removeBlackSpace.stopRowTop = 0
-            topFlag = True
-            removeBlackSpace.stopColLeft = 0
-            leftFlag = True
-            removeBlackSpace.stopRowBottom = len(slide_image)
-            bottomFlag = False
-            removeBlackSpace.stopColRight = len(slide_image[0])
-            rightFlag = False
-
-            for row in range(len(bin_img)):
-                if(topFlag and sum(bin_img[row]) > 10):
-                    removeBlackSpace.stopRowTop = row
-                    topFlag = False
-                    bottomFlag = True
-                elif(bottomFlag and sum(bin_img[row]) < 10):
-                    removeBlackSpace.stopRowBottom = row
-                    bottomFlag = False
-
-                if(leftFlag and sum(bin_img[:, row]) > 10):
-                    removeBlackSpace.stopColLeft = row
-                    leftFlag = False
-                    rightFlag = True
-                elif(rightFlag and sum(bin_img[:, row]) < 10):
-                    print(sum(bin_img[:, row]))
-                    removeBlackSpace.stopColRight = row
-                    rightFlag = False
-
-                if(not(leftFlag or rightFlag or topFlag or bottomFlag)):
-                    break
-            
-            inner_len = ((removeBlackSpace.stopRowBottom - removeBlackSpace.stopRowTop)*(1.4142))/2
-            divider = ((removeBlackSpace.stopRowBottom - removeBlackSpace.stopRowTop) - inner_len)/2
-            removeBlackSpace.divider = int(divider)
-
-            removeBlackSpace.processed = True
-        
-        new_image = crop(slide_image, removeBlackSpace.stopRowTop, removeBlackSpace.stopColLeft,
-                            removeBlackSpace.stopRowBottom, removeBlackSpace.stopColRight)
-
-        new_image = crop(new_image, removeBlackSpace.divider, removeBlackSpace.divider, len(new_image) - removeBlackSpace.divider, len(new_image) - removeBlackSpace.divider)
-        
         removeBlackSpace.num_images += 1
         img_name = img_name + str(removeBlackSpace.num_images) + ".jpg"
 
-        if(save_image): cv2.imwrite(img_name, new_image)
+        path = 'C:\VSCode Projects\DigitalPathology2020\DigitalPathWebsite\Backend\RecordedImages'
+        if(save_image): cv2.imwrite(os.path.join(path, img_name), slide_image)
 
-        return new_image
+        return slide_image
     
     def twoDimConvolution(self, slide_image, kernel):
         new_img = cv2.filter2D(slide_image, -1, kernel)
@@ -111,7 +67,7 @@ class removeBlackSpace:
         if(status == cv2.STITCHER_OK):
             return result
         else:
-            return 0
+            return np.array([])
 
     def base64ToArray(self, img_data):
         im_bytes = base64.b64decode(img_data)
@@ -132,3 +88,53 @@ class removeBlackSpace:
         byte_list = base64.b64encode(byte_list)
 
         return byte_list
+    
+    def pythonRemoveBlackSpace(self, slide_image): 
+        limit = 10
+
+        bin_img = cv2.cvtColor(slide_image, cv2.COLOR_BGR2GRAY)
+
+        threshold, bin_img = cv2.threshold(bin_img, limit, 1, cv2.THRESH_BINARY)
+
+        if(not removeBlackSpace.processed):
+            removeBlackSpace.stopRowTop = 0
+            topFlag = True
+            removeBlackSpace.stopColLeft = 0
+            leftFlag = True
+            removeBlackSpace.stopRowBottom = len(slide_image)
+            bottomFlag = False
+            removeBlackSpace.stopColRight = len(slide_image[0])
+            rightFlag = False
+
+            for row in range(len(bin_img)):
+                if(topFlag and sum(bin_img[row]) > 50):
+                    removeBlackSpace.stopRowTop = row
+                    topFlag = False
+                    bottomFlag = True
+                elif(bottomFlag and sum(bin_img[row]) < 10):
+                    removeBlackSpace.stopRowBottom = row
+                    bottomFlag = False
+
+                if(leftFlag and sum(bin_img[:, row]) > 50):
+                    removeBlackSpace.stopColLeft = row
+                    leftFlag = False
+                    rightFlag = True
+                elif(rightFlag and sum(bin_img[:, row]) < 10):
+                    removeBlackSpace.stopColRight = row
+                    rightFlag = False
+
+                if(not(leftFlag or rightFlag or topFlag or bottomFlag)):
+                    break
+            
+            removeBlackSpace.inner_len = ((removeBlackSpace.stopColRight - removeBlackSpace.stopColLeft)*(1.4142))/2
+            divider = ((removeBlackSpace.stopRowBottom - removeBlackSpace.stopRowTop) - removeBlackSpace.inner_len)/2
+            removeBlackSpace.divider = int(divider)
+
+            removeBlackSpace.processed = True
+
+        new_image = crop(slide_image, removeBlackSpace.stopRowTop, removeBlackSpace.stopColLeft,
+                            removeBlackSpace.stopRowBottom, removeBlackSpace.stopColRight)
+
+        new_image = crop(new_image, removeBlackSpace.divider, removeBlackSpace.divider, removeBlackSpace.divider + int(removeBlackSpace.inner_len), removeBlackSpace.divider + int(removeBlackSpace.inner_len))
+
+        return new_image

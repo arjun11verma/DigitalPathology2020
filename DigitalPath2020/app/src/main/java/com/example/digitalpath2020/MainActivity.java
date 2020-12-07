@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading
     private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
 
-    private int pTimer = 0; // measures the amount of pictures that have been taken
     private int maxNumImages = 50; // the maximum number of pictures that will be taken
     private int delay = 2000; // delay until camera starts in milliseconds
     private int period = 3000; // period of time between each picture being taken
@@ -42,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     MainActivity activity = this;
     private BaseView currentView; // current page of the app
-    private boolean check = true;
+    private boolean loggedIn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +49,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         initDB();
         serverConnection = new ServerConnect(this);
 
-        if(check) {
+        System.out.println(database.getTaskApp().currentUser());
+
+        if(database.getTaskApp().currentUser() == null || !database.getTaskApp().currentUser().isLoggedIn()) {
             changeView(new LoginView(this));
+        } else {
+            loggedIn = true;
+            username = database.getTaskApp().currentUser().getProfile().getEmail();
+            changeView(new ConfirmCameraView(this));
         }
     }
 
@@ -90,18 +95,21 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             timer.schedule(timerTask, delay, period); // activates the timer and schedules the task
             cameraView.enableView(); // activates the camera
             clicked = true; // prevents the button from being clicked multiple times and crashing the system
-
-            Camera.Parameters parameters = cameraView.mCamera.getParameters();
-            cameraView.mCamera.autoFocus(new Camera.AutoFocusCallback() {
-                @Override
-                public void onAutoFocus(boolean success, Camera camera) {
-                    System.out.println(success);
-                }
-            });
-
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-            cameraView.mCamera.setParameters(parameters);
+            focus();
         }
+    }
+
+    public void focus() {
+        Camera.Parameters parameters = cameraView.mCamera.getParameters();
+        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        cameraView.mCamera.setParameters(parameters);
+
+        cameraView.mCamera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                System.out.println(success);
+            }
+        });
     }
 
     public void stopCamera() {
@@ -113,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                check = false;
                 changeView(new AfterCaptureView(activity)); // goes to the after capture page after the set number of images has been captured
             }
         });
@@ -147,13 +154,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    check = false;
                     changeView(new AfterCaptureView(activity)); // goes to the after capture page after the set number of images has been captured
                 }
             });
         }
         if(matList.size() > 0) {
-            return matList.get(pTimer);
+            return matList.get(matList.size() - 1);
         }
         else {
             return baseScreen;
@@ -203,10 +209,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return baseFrame;
     }
 
-    public void setpTimer(int x) {
-        pTimer = x;
-    }
-
     public void changeView(BaseView v) { currentView = v; }
 
     public App getApp() {return database.getTaskApp(); }
@@ -242,4 +244,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     }
 
     public ServerConnect getServerConnection() { return serverConnection; }
+
+    public void setLoggedIn(boolean set) { loggedIn = set; }
+
+    public boolean isLoggedIn() { return loggedIn; }
 }

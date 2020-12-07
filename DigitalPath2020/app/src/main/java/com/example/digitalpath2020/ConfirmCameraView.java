@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class ConfirmCameraView extends BaseView {
     private EditText slideName;
@@ -16,11 +17,15 @@ public class ConfirmCameraView extends BaseView {
     public ConfirmCameraView(Context context) {
         super(context);
 
+        checkLoggedIn();
+
         activity.setContentView(R.layout.confirm_camera_activity);
 
         slideName = activity.findViewById(R.id.slideType);
         cancerName = activity.findViewById(R.id.cancerType);
         patientName = activity.findViewById(R.id.patientName);
+
+        ((TextView)(activity.findViewById(R.id.setupTitle))).setText("Welcome " + (activity.getUsername().split("@"))[0] + "!");
 
         activity.findViewById(R.id.previewCamera).setOnClickListener(new OnClickListener() {
             @Override

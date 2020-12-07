@@ -11,10 +11,12 @@
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="60dp"
+        android:textAlignment="center"
         android:text="Congratulations! You have successfully uploaded your images. You may logout or take more slide images."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center_horizontal" />
 
     <Button
         android:id="@+id/logoutBtn"

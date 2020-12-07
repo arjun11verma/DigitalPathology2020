@@ -1,5 +1,10 @@
 import React, { Component } from 'react'
+import * as Realm from "realm-web";
 import axios from 'axios'
+
+import {app} from './Database';
+
+const server_url = 'http://127.0.0.1:5000';
 
 class Homepage extends Component {
     constructor(props) {
@@ -10,24 +15,29 @@ class Homepage extends Component {
     }
 
     componentDidMount = () => {
-        this.printImages();
+        if(app.currentUser.isLoggedIn) {
+            this.printImages();
+        }
     }
 
-    printImages = () => {
-        axios.post('http://127.0.0.1:5000/displayImages', { 'username': 'arjun@gmail.com' }).then(res => {
-            var response_data = res.data;
-            response_data = response_data['image_list'];
+    printImages = async() => {
+        console.log(app);
 
-            var imgData = "data:image/jpeg;base64," + (response_data[0]);
-            var tempList = this.state.imgList;
+        const mongo_db = app.services.mongodb("DigPath2020");
+        
+        const mongo_collection = mongo_db.db("digitalpath2020").collection("ImageSet");
 
-            var img = React.createElement("img", { key: "image", src: imgData}, null);
+        var imgData = await mongo_collection.find({username: "arjun@gmail.com"});
+        console.log(imgData);
 
-            tempList.push(img);
+        var base64_data = "";
+        imgData.forEach(json_data => {
+            base64_data = json_data['image'];
+            imgData.push(React.createElement("img", { key: "image", src: ("data:image/jpeg;base64," + base64_data)}, null));
+        });
 
-            this.setState({
-                imgList: tempList
-            });
+        this.setState({
+            imgList: imgData
         });
     }
 
@@ -36,7 +46,7 @@ class Homepage extends Component {
             <div>
                 <div>{this.state.imgList}</div>
             </div>
-        )
+        );
     }
 }
 
