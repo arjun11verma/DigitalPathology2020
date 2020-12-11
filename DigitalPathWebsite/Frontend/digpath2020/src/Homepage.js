@@ -1,50 +1,45 @@
-import React, { Component } from 'react'
-import * as Realm from "realm-web";
-import axios from 'axios'
-
-import {app} from './Database';
-
-const server_url = 'http://127.0.0.1:5000';
+import {apolloClient} from './ApolloClient'
+import React, { Component } from 'react';
+import {check} from './Database';
+import gql from "graphql-tag";
 
 class Homepage extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            username: "arjun@gmail.com",
             imgList: []
         }
     }
 
     componentDidMount = () => {
-        if(app.currentUser.isLoggedIn) {
-            this.printImages();
-        }
+        if(!check()) document.location.href = ('/');
+        apolloClient.query({
+            query: gql`
+            query {
+                imageSet(query: {name: "George"}) {
+                    image
+                }
+            }`
+        }).then((res) => {
+            console.log(res);
+        }).catch(err => {
+            console.log(err);
+        });
     }
 
-    printImages = async() => {
-        console.log(app);
-
-        const mongo_db = app.services.mongodb("DigPath2020");
-        
-        const mongo_collection = mongo_db.db("digitalpath2020").collection("ImageSet");
-
-        var imgData = await mongo_collection.find({username: "arjun@gmail.com"});
-        console.log(imgData);
-
-        var base64_data = "";
+    processImages = (imgData) => {
         imgData.forEach(json_data => {
-            base64_data = json_data['image'];
-            imgData.push(React.createElement("img", { key: "image", src: ("data:image/jpeg;base64," + base64_data)}, null));
+            imgData.push(React.createElement("img", { key: "image", src: ("data:image/jpeg;base64," + json_data)}, null));
         });
-
-        this.setState({
-            imgList: imgData
-        });
+        
+        return imgData;
     }
 
     render() {
         return (
             <div>
-                <div>{this.state.imgList}</div>
+                
             </div>
         );
     }

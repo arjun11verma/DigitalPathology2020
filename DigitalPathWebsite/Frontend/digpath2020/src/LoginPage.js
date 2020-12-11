@@ -1,17 +1,12 @@
 import React, { Component } from 'react'
-import * as Realm from "realm-web";
-import axios from 'axios'
 import { Grid } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { Button } from '@material-ui/core';
 import { Container } from '@material-ui/core';
 import { Paper } from '@material-ui/core';
 import { TextField } from "@material-ui/core";
-import { FormControlLabel } from "@material-ui/core";
 import Link from "@material-ui/core/Link";
-import {app} from './Database';
-
-var assert = require('assert');
+import {logIn} from './Database';
 
 class LoginPage extends Component {
     constructor(props) {
@@ -22,13 +17,11 @@ class LoginPage extends Component {
         }
     }
 
-    login = async () => {
+    login = async() => {
         const email = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         try {
-            const user = await app.logIn(Realm.Credentials.emailPassword(email, password));
-            assert(user.id === app.currentUser.id);
-            document.location.href = ('/Homepage/' + email);
+            if(await logIn(email, password)) document.location.href = ('/Homepage/' + email);
         } catch (error) {
             this.setState({
                 passwordFailed: true,

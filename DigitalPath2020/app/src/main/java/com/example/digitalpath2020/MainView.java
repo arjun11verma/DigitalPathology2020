@@ -1,3 +1,10 @@
+/**
+ * This is the camera page of the app, where images are taken and displayed.
+ *
+ * @author Arjun Verma
+ * @version 1.0
+ */
+
 package com.example.digitalpath2020;
 
 import android.content.Context;
@@ -6,6 +13,12 @@ import android.view.View;
 import org.opencv.android.JavaCameraView;
 
 public class MainView extends BaseView {
+    /**
+     * Constructor for the MainView class
+     * Sets the UI to the main page's UI layout (activity_main)
+     * Assigns the activity's button action and stop camera methods to the start/stop camera buttons respectively
+     * @param context A reference to the instance of the main activity class
+     */
     public MainView(Context context) {
         super(context);
 
@@ -13,7 +26,7 @@ public class MainView extends BaseView {
 
         activity.setContentView(R.layout.activity_main);
 
-        activity.activateCamera((JavaCameraView)activity.findViewById(R.id.camera));
+        activity.activateCamera((JavaCameraView) activity.findViewById(R.id.camera));
 
         activity.findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override

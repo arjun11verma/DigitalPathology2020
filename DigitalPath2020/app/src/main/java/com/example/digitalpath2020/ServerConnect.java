@@ -1,3 +1,9 @@
+/**
+ * This is a class for the connection to the Python server
+ * @author Arjun Verma
+ * @version 1.0
+ */
+
 package com.example.digitalpath2020;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -12,17 +18,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ServerConnect {
-    private RequestQueue queue;
-    private String serverUrl = "http://ab48c13eb9ba.ngrok.io";
-    private MainActivity activity;
-    private boolean done = false;
-    private boolean success = true;
+    private RequestQueue queue; // Volley request queue
+    private String serverUrl = "http://ab48c13eb9ba.ngrok.io"; // Server url
+    private MainActivity activity; // Instance of the main activity
+    private boolean done = false; // Boolean representing whether the call was made
+    private boolean success = true; // Boolean representing whether the call was a success
 
+    /**
+     * Constructor for the ServerConnect class
+     * @param activity Instance of the main activity
+     */
     public ServerConnect(MainActivity activity) {
         this.activity = activity;
         queue = Volley.newRequestQueue(this.activity);
     }
 
+    /**
+     * Makes a post to the Python server using the Android Volley library
+     * Determines whether to the post was successful or not
+     * @param postObject JSON object to be sent to the server
+     */
     public void makePost(JSONObject postObject) {
         if(!done) {
             System.out.println("Method Called!");
@@ -59,6 +74,8 @@ public class ServerConnect {
             done = true;
         }
     }
+
+    // Getters and setters for the fields
 
     public boolean getDone() {
         return done;

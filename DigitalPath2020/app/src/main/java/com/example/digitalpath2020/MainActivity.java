@@ -1,3 +1,10 @@
+/**
+ * This is the main activity class, it serves as the "base" of the app. This activity is the base of the app itself, and displays all of the UI components
+ *
+ * @author Arjun Verma
+ * @version 1.0
+ */
+
 package com.example.digitalpath2020;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,48 +31,26 @@ import io.realm.mongodb.App;
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCameraView cameraView; // View that will be accessing the camera, taking pictures and displaying them
     private Mat baseScreen; // Mat objects that will act as temporary storage for camera data
-    private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading
+    private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading and displaying
     private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
 
-    private int maxNumImages = 50; // the maximum number of pictures that will be taken
-    private int delay = 2000; // delay until camera starts in milliseconds
-    private int period = 3000; // period of time between each picture being taken
-    private Timer timer;
-    private Task timerTask; // task to be executed that will take in and do rudimentary processing on images
-    private boolean clicked = false; // prevents a crash by stopping the button after it has been clicked once
+    private int maxNumImages = 50; // The maximum number of pictures that will be taken
+    private int delay = 1000; // Delay until camera starts in milliseconds
+    private int period = 3000; // Period of time between each picture being taken
+    private Timer timer; // Timer that will control when each picture is being taken
+    private Task timerTask; // Task to be executed that will take in and do rudimentary processing on images
+    private boolean clicked = false; // Prevents a crash by stopping the button after it has been clicked once
 
     private MDatabase database; // AWS database to be connected to through the MongoDB client
-    private String username; // user data
-    private String slide, cancer, name; // slide image/user data
-    private ServerConnect serverConnection;
+    private String username; // User data
+    private String slide, cancer, name; // User data
+    private ServerConnect serverConnection; // Connection to the Python Image Processing Server using the Volley HTTP library
 
-    MainActivity activity = this;
-    private BaseView currentView; // current page of the app
+    MainActivity activity = this; // Instance of the main activity to pass to other classes
+    private BaseView currentView; // Current page of the app
     private boolean loggedIn = false;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        initDB();
-        serverConnection = new ServerConnect(this);
-
-        System.out.println(database.getTaskApp().currentUser());
-
-        if(database.getTaskApp().currentUser() == null || !database.getTaskApp().currentUser().isLoggedIn()) {
-            changeView(new LoginView(this));
-        } else {
-            loggedIn = true;
-            username = database.getTaskApp().currentUser().getProfile().getEmail();
-            changeView(new ConfirmCameraView(this));
-        }
-    }
-
-    private void initDB() {
-        database = new MDatabase(); // creates an instance of the MongoDB Application class
-        database.onCreate(); // connects to the AWS database cluster through our app's MongoDB client
-    }
-
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) { // loads the OpenCV library
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) { // Connects to and loads the OpenCV Library
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
@@ -81,24 +66,76 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     };
 
-    public void activateCamera(JavaCameraView camera) { // activates and initializes the camera
-        cameraView = camera;
-        cameraView.setVisibility(SurfaceView.VISIBLE);
-        cameraView.setCvCameraViewListener(this); // sets the cameraview to take input from the android camera
+    /**
+     * This method is called when the app is opened and it builds the main activity
+     * This method instantiates the database connection as well as the server connection, and it then checks if the user is currently logged in
+     * It then redirects a user to either the login page or the main app page
+     *
+     * @param savedInstanceState Saved state of the app such that the state of the app remains the same if closed then opened
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initDB();
+        serverConnection = new ServerConnect(this);
+
+        System.out.println(database.getTaskApp().currentUser());
+
+        if (database.getTaskApp().currentUser() == null || !database.getTaskApp().currentUser().isLoggedIn()) {
+            changeView(new LoginView(this));
+        } else {
+            loggedIn = true;
+            username = database.getTaskApp().currentUser().getProfile().getEmail();
+            changeView(new ConfirmCameraView(this));
+        }
     }
 
-    public void buttonAction() { // begins to take pictures
-        if(!clicked) {
+    /**
+     * Creates an instance of the MongoDB Application class
+     * Connects to the DigitalPath2020 database through the Android Studio MongoDB API
+     */
+    private void initDB() {
+        database = new MDatabase();
+        database.onCreate();
+    }
+
+    /**
+     * Logs out the current user
+     */
+    public void logout() {
+        database.logout();
+        loggedIn = false;
+    }
+
+    /**
+     * Activates and initializes the camera
+     * Sets the JavaCameraView class to take input from the phone's camera
+     * @param camera JavaCameraView to be activated
+     */
+    public void activateCamera(JavaCameraView camera) {
+        cameraView = camera;
+        cameraView.setVisibility(SurfaceView.VISIBLE);
+        cameraView.setCvCameraViewListener(this);
+    }
+
+    /**
+     * Activates the timer and schedules the task to take pictures
+     */
+    public void buttonAction() {
+        if (!clicked) {
             matList.clear();
             timer = new Timer();
             timerTask = new Task(this);
-            timer.schedule(timerTask, delay, period); // activates the timer and schedules the task
-            cameraView.enableView(); // activates the camera
-            clicked = true; // prevents the button from being clicked multiple times and crashing the system
+            timer.schedule(timerTask, delay, period);
+            cameraView.enableView();
+            clicked = true;
             focus();
         }
     }
 
+    /**
+     * Refocuses the Android camera
+     */
     public void focus() {
         Camera.Parameters parameters = cameraView.mCamera.getParameters();
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
@@ -112,6 +149,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         });
     }
 
+    /**
+     * Stops the camera and switches the view to the post capture page
+     */
     public void stopCamera() {
         timer.cancel(); // stops the timer
         timer.purge(); // makes the timertask stop occuring
@@ -126,25 +166,41 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         });
     }
 
-    public void resetClick()
-    {
+    /**
+     * Resets the button so it is clickable
+     */
+    public void resetClick() {
         clicked = false;
     }
 
+    /**
+     * Called when the camera is started
+     * @param width -  the width of the frames that will be delivered
+     * @param height - the height of the frames that will be delivered
+     */
     @Override
     public void onCameraViewStarted(int width, int height) {
 
     }
 
+    /**
+     * Called when the camera is stopped
+     */
     @Override
     public void onCameraViewStopped() {
 
     }
 
+    /**
+     * Processes the inputs of the camera. The raw data from the camera is constantly being streamed into this method in the form of an OpenCV CvCameraViewFrame
+     * This method constantly updates a Mat (Image matrix) in the activity class with the current view of the camera
+     * @param inputFrame The raw input of the native Android camera
+     * @return
+     */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         baseFrame = inputFrame; // updates the system with each frame the android camera captures
-        if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken.
+        if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken
         {
             timer.cancel(); // stops the timer
             timer.purge(); // makes the timertask stop occuring
@@ -158,19 +214,25 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 }
             });
         }
-        if(matList.size() > 0) {
+        if (matList.size() > 0) {
             return matList.get(matList.size() - 1);
-        }
-        else {
+        } else {
             return baseScreen;
         }
     }
 
+    /**
+     * Inherited method
+     * @param hasCapture
+     */
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
 
+    /**
+     * Called when camera is paused
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -179,6 +241,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    /**
+     * Called when camera is resumed
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -191,6 +256,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    /**
+     * Called when camera is destroyed/view layout changes
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -199,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
-    // getters and setters for the fields
+    // Getters and Setters for the fields
 
     public void addMat(Mat mat) {
         matList.add(mat);
@@ -209,23 +277,37 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return baseFrame;
     }
 
-    public void changeView(BaseView v) { currentView = v; }
+    public void changeView(BaseView v) {
+        currentView = v;
+    }
 
-    public App getApp() {return database.getTaskApp(); }
+    public App getApp() {
+        return database.getTaskApp();
+    }
 
-    public List<Mat> getMatList() { return matList; }
+    public List<Mat> getMatList() {
+        return matList;
+    }
 
-    public String getUsername() { return username; }
+    public String getUsername() {
+        return username;
+    }
 
     public Realm getRealm() {
         return database.getRealm();
     }
 
-    public String getSlide() { return slide; }
+    public String getSlide() {
+        return slide;
+    }
 
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
-    public String getCancer() { return cancer; }
+    public String getCancer() {
+        return cancer;
+    }
 
     public void setSlide(String slide) {
         this.slide = slide;
@@ -243,9 +325,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         this.username = username;
     }
 
-    public ServerConnect getServerConnection() { return serverConnection; }
+    public ServerConnect getServerConnection() {
+        return serverConnection;
+    }
 
-    public void setLoggedIn(boolean set) { loggedIn = set; }
+    public void setLoggedIn(boolean set) {
+        loggedIn = set;
+    }
 
-    public boolean isLoggedIn() { return loggedIn; }
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
 }

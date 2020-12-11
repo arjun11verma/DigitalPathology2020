@@ -1,3 +1,10 @@
+/**
+ * This is the after capture page of the app, where images are reviewed and uploaded
+ *
+ * @author Arjun Verma
+ * @version 1.0
+ */
+
 package com.example.digitalpath2020;
 
 import android.content.Context;
@@ -20,11 +27,18 @@ import io.realm.Realm;
 import io.realm.mongodb.sync.SyncConfiguration;
 
 public class AfterCaptureView extends BaseView {
-    private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // list of the captured images
-    private byte[][] byteArr = new byte[activity.getMatList().size()][];
-    private boolean clicked = false;
-    private ProgressBar uploading;
-    
+    private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // Empty array of Bitmaps whose length is equivalent to the number of images captured
+    private byte[][] byteArr = new byte[activity.getMatList().size()][]; // Empty array of byte arrays whose length is equivalent to the number of images captured
+    private boolean clicked = false; // Boolean to prevent button from being over-clicked
+    private ProgressBar uploading; // Progress bar to visualize image uploading
+
+    /**
+     * Constructor for the AfterCaptureView class
+     * Sets the UI to the after capture layout
+     * Converts the list of images taken in the main view into bitmaps, and then uploads these bitmaps to the UI page so the user can review the images taken
+     * Sets the upload images button's click to the serverUpload method and sets the retake images button's click to a method that redirects to the image capture page
+     * @param context A reference to the instance of the main activity class
+     */
     public AfterCaptureView(Context context) {
         super(context);
 
@@ -37,14 +51,13 @@ public class AfterCaptureView extends BaseView {
 
         LinearLayout lay = activity.findViewById(R.id.imageLayout);
 
-        for(int i = 0; i < activity.getMatList().size(); i++)
-        {
+        for (int i = 0; i < activity.getMatList().size(); i++) {
             bitArr[i] = (toBitmap(activity.getMatList().get(i)));
             ImageView view = new ImageView(activity);
             view.setImageBitmap(bitArr[i]);
             view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
-            lay.addView(view); // updates post view with all of the images captured so the client can confirm their quality
+            lay.addView(view);
 
             byteArr[i] = toByteArray(bitArr[i]);
 
@@ -54,32 +67,7 @@ public class AfterCaptureView extends BaseView {
         activity.findViewById(R.id.uploadImgBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!clicked) {
-                    uploading.setVisibility(View.VISIBLE);
-
-                    JSONObject object = new JSONObject();
-
-                    try {
-                        object.put("name", activity.getName());
-                        object.put("cancer", activity.getCancer());
-                        object.put("slide", activity.getSlide());
-                        object.put("username", activity.getUsername());
-
-                        for (int i = 0; i < bitArr.length; i++) {
-                            String tag = "" + i;
-                            object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
-                            System.out.println(i);
-                        }
-                    } catch (JSONException e) {
-                        System.out.println(e);
-                    }
-
-                    clicked = true;
-
-                    activity.getServerConnection().makePost(object);
-
-                    System.out.println("Images uploaded to server!");
-                }
+                serverUpload();
             }
         });
 
@@ -92,20 +80,63 @@ public class AfterCaptureView extends BaseView {
         });
     }
 
-    public Bitmap toBitmap(Mat m)
-    {
-        Bitmap map =  Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
+    /**
+     * Converts the OpenCV Mat to a Bitmap
+     * @param m Mat to be converted to a bitmap
+     * @return The converted bitmap
+     */
+    public Bitmap toBitmap(Mat m) {
+        Bitmap map = Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(m, map);
         return map;
     }
 
-    public byte[] toByteArray(Bitmap m)
-    {
+    /**
+     * Converts a Bitmap to a byte array
+     * @param m Bitmap to be converted to a byte array
+     * @return The converted byte array
+     */
+    public byte[] toByteArray(Bitmap m) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         m.compress(Bitmap.CompressFormat.JPEG, 100, bos); // compresses image file so its binary data can fit reasonably on the database
         return bos.toByteArray();
     }
 
+    /**
+     * Uploads the entire set of images alongside the user data in a JSON object to the Python server by utilizing the server connection
+     */
+    public void serverUpload() {
+        if (!clicked) {
+            uploading.setVisibility(View.VISIBLE);
+
+            JSONObject object = new JSONObject();
+
+            try {
+                object.put("name", activity.getName());
+                object.put("cancer", activity.getCancer());
+                object.put("slide", activity.getSlide());
+                object.put("username", activity.getUsername());
+
+                for (int i = 0; i < bitArr.length; i++) {
+                    String tag = "" + i;
+                    object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
+                    System.out.println(i);
+                }
+            } catch (JSONException e) {
+                System.out.println(e);
+            }
+
+            clicked = true;
+
+            activity.getServerConnection().makePost(object);
+
+            System.out.println("Images uploaded to server!");
+        }
+    }
+
+    /**
+     * Uploads the images directly to the MongoDB database. This method is no longer in use
+     */
     public void mongoUpload() {
         SyncConfiguration config = new SyncConfiguration.Builder(activity.getApp().currentUser(), "digitalpath").build();
         Realm mongoRealm = Realm.getInstance(config); // gets an instance of the MongoDB realm based off of the current logged in user
@@ -121,7 +152,7 @@ public class AfterCaptureView extends BaseView {
                 imgSet.setSlide(activity.getSlide());
                 imgSet.setUsername(activity.getUsername());
 
-                for(int i = 0; i < bitArr.length; i++) { // uploads the image objects to the ImageSet object in MongoDB
+                for (int i = 0; i < bitArr.length; i++) { // uploads the image objects to the ImageSet object in MongoDB
                     ImageObject imgObj = realm.createEmbeddedObject(ImageObject.class, imgSet, "imageObjects"); // uploads the object
                     imgObj.setImage(toByteArray(bitArr[i])); // uploads the image data
                     imgObj.setImageType("JPEG");

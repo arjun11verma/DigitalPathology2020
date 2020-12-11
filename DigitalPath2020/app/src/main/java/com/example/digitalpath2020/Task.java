@@ -1,6 +1,10 @@
-package com.example.digitalpath2020;
+/**
+ * This is a class for the image capture TimerTask
+ * @author Arjun Verma
+ * @version 1.0
+ */
 
-import android.hardware.Camera;
+package com.example.digitalpath2020;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -10,19 +14,44 @@ import org.opencv.imgproc.Imgproc;
 import java.util.TimerTask;
 
 public class Task extends TimerTask {
-    private MainActivity activity;
-    private int divider;
-    private Mat mRGBAT, mRGBA, mGRAY, mBIN, mRET;
-    private boolean centered = false;
-    private int stopRowTop = 0, stopRowBottom = 0, stopColLeft = 0, stopColRight = 0;
-    private boolean topFlag, bottomFlag, leftFlag, rightFlag;
+    private MainActivity activity; // Instance of the main activity
+    private int divider; // Distance for cropping image
+    private Mat mRGBAT, mRGBA, mGRAY, mBIN, mRET; // Mats to store temporary image data
+    private boolean centered = false; // Determines whether cropping range has been determined or not
+    private int stopRowTop = 0, stopRowBottom = 0, stopColLeft = 0, stopColRight = 0; // Cropping ranges
+    private boolean topFlag, bottomFlag, leftFlag, rightFlag; // Booleans to determine when cropping ranges have been determined
 
+    /**
+     * Constructor for the Task class
+     * @param activity Instnace of the main activity
+     */
     public Task(MainActivity activity) {
         this.activity = activity;
         mGRAY = new Mat();
         mBIN = new Mat();
     }
 
+    /**
+     * Run method inherited from the TimerTask class, called by the timer
+     * Processes images and adds them to the image list in the main activity
+     */
+    @Override
+    public void run() {
+        activity.focus();
+
+        mRGBA = activity.getBaseFrame().rgba();
+        mRGBAT = mRGBA.t();
+        Core.flip(mRGBA.t(), mRGBAT, 1);
+        Imgproc.resize(mRGBAT, mRGBAT, mRGBA.size());
+
+        removeBlackSpace();
+
+        if(centered) activity.addMat(mRET);
+    }
+
+    /**
+     * Method that removes the black space that naturally occurs in a microscope image and crops the image into a square
+     */
     public void removeBlackSpace() {
         if(!centered) {
             topFlag = true;
@@ -30,7 +59,7 @@ public class Task extends TimerTask {
 
             Imgproc.cvtColor(mRGBAT, mGRAY, Imgproc.COLOR_BGR2GRAY);
 
-            Imgproc.threshold(mGRAY, mBIN, 30, 1, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(mGRAY, mBIN, 30, 5, Imgproc.THRESH_BINARY);
 
             for(int i = 0; i < 720; i++) {
                 if(topFlag && Core.sumElems(mBIN.row(i)).val[0] > 50) {
@@ -57,21 +86,10 @@ public class Task extends TimerTask {
         }
 
         mRET = new Mat(mRGBAT, (new Rect(stopColLeft + divider, stopRowTop + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider)));
+        if(mRET.size().width == 0 || mRET.size().height == 0) {
+            mRET = mRGBAT;
+        }
+
         Imgproc.resize(mRET, mRET, mRGBA.size());
-    }
-
-    @Override
-    public void run() {
-        activity.focus();
-
-        mRGBA = activity.getBaseFrame().rgba();
-        mRGBAT = mRGBA.t();
-        Core.flip(mRGBA.t(), mRGBAT, 1);
-        Imgproc.resize(mRGBAT, mRGBAT, mRGBA.size());
-
-        //removeBlackSpace();
-
-        //activity.addMat(mRET);
-        activity.addMat(mRGBAT);
     }
 }

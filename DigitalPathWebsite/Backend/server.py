@@ -53,10 +53,6 @@ def acceptImages():
 
    print("Regular stitching over!")
 
-   partial_stitch = partialStitching(imgproc, img_list)
-
-   print("Partial stitching over!") 
-
    username = post_data['username']
    name = post_data['name']
    slide_type = post_data['slide']
@@ -64,7 +60,6 @@ def acceptImages():
    time_stamp = (datetime.now()).strftime("%d/%m/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
-   #slide_image = partial_stitch if len(partial_stitch) > len(slide_image) else slide_image
    print(len(slide_image))
 
    if(len(slide_image) >= 1000):
