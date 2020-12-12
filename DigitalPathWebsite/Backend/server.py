@@ -22,19 +22,15 @@ app = Flask(__name__)
 
 mongoUri = "mongodb+srv://averma332:Timeline123#@digpath2020.mujb1.mongodb.net/digitalpath2020?retryWrites=true&w=majority"
 
-cors = CORS(app)
+cors = CORS(app) # Sets my Cross Origin Access Header to Allow Access so my phone can send data to my server
 
-mongo = PyMongo(app, uri = mongoUri)
+mongo = PyMongo(app, uri = mongoUri) # Connects my Flask server to my MongoDB database
 
 images = mongo.db.ImageSet
 
-@app.route('/login', methods = ['POST'])
-def login():
-   login_status = False
-   return {'status': login_status}
-
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
+   """Accepts Images in JSON format, stitches them together using OpenCV and uploads the stitched image to MongoDB. Returns the status of the processing/upload."""
    imgproc = removeBlackSpace()
 
    post_data = (literal_eval(request.data.decode('utf8')))
@@ -71,6 +67,7 @@ def acceptImages():
 
 @app.route('/displayImages', methods = ['POST'])
 def displayImages():
+   """Checks MongoDB for images based on specifications given in the POST call and returns those images as Base64 Strings in JSON"""
    post_data = (literal_eval(request.data.decode('utf8')))
    username = post_data['username']
 
@@ -86,6 +83,7 @@ def displayImages():
    return {"image_list": img_data_new}
 
 def partialStitching(imgproc, img_list):
+   """Stitches together images in chunks then stiches the chunks together. This algorithm is typically less effective than regular stitching."""
    inner_list = []
 
    inner_step = int(len(img_list)/4)
@@ -116,8 +114,8 @@ def partialStitching(imgproc, img_list):
 
    return slide_image
 
-run_with_ngrok(app)
-app.run()
+run_with_ngrok(app) # Configures the server with Ngrok, a localhost tunneling service that allows my phone to send data to an instance of the server running on a computer
+app.run() # Runs the server
 
    
    

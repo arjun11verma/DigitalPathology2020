@@ -2,7 +2,9 @@ from ImageStichAlgorithm.removeblackspace import removeBlackSpace
 import cv2 
 import numpy as np
 
-imgproc = removeBlackSpace()
+# This is a class for testing the image processing algorithms and verifying sample slide images. It is merely for testing purposes
+
+imgproc = removeBlackSpace() 
 
 images = []
 

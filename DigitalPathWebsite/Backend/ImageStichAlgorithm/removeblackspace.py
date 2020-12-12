@@ -7,6 +7,7 @@ def crop(img_arr, top, left, bottom, right):
     return img_arr[top:bottom, left:right]
 
 class removeBlackSpace:
+    """Image processing class for converting image formats, stitching images together, applying filters and removing black space from microscope images"""
     num_images = 0
     stopRowTop = 0
     stopColLeft = 0
@@ -18,9 +19,11 @@ class removeBlackSpace:
     stitcher = cv2.Stitcher.create()
 
     def __init__(self):
+        """Intializer for the class"""
         pass
 
     def displayImage(self, img_url):
+        """Displays an image from either a filepath or an Numpy array"""
         if(isinstance(img_url, str)):
             slide_image = cv2.imread(img_url)
         else:
@@ -30,6 +33,7 @@ class removeBlackSpace:
         cv2.waitKey(0)
 
     def removeBlackSpace(self, img_url, img_name, save_image):
+        """Converts an image to Numpy and saves it if the option is selected. Removes black space around microscope image if neccessary"""
         if(isinstance(img_url, str)):
             slide_image = cv2.imread(img_url)
         else:
@@ -44,10 +48,12 @@ class removeBlackSpace:
         return slide_image
     
     def twoDimConvolution(self, slide_image, kernel):
+        """Performs a 2D Convlution on the image"""
         new_img = cv2.filter2D(slide_image, -1, kernel)
         return new_img
     
     def sharpenImage(self, img_data):
+        """Applies a typical medical image processing sharpening kernel to the image"""
         kernel_data = []
 
         dim = 3
@@ -62,6 +68,7 @@ class removeBlackSpace:
         return cv2.filter2D(img_data, -1, sharpening_kernel)
 
     def stitchImages(self, slides):
+        """Stitches together an array of images using the OpenCV Panorama stitcher"""
         (status, result) = removeBlackSpace.stitcher.stitch(slides)
 
         if(status == cv2.STITCHER_OK):
@@ -70,6 +77,7 @@ class removeBlackSpace:
             return np.array([])
 
     def base64ToArray(self, img_data):
+        """Converts an image from Base64 to a Numpy array"""
         im_bytes = base64.b64decode(img_data)
         im_arr = np.frombuffer(im_bytes, dtype=np.uint8)
         img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
@@ -77,6 +85,7 @@ class removeBlackSpace:
         return img
     
     def arrayToBase64(self, img_data):
+        """Converts an image from a Numpy array to Base64"""
         success, img_data = cv2.imencode(".jpg", img_data)
 
         byte_list = []
@@ -90,6 +99,7 @@ class removeBlackSpace:
         return byte_list
     
     def pythonRemoveBlackSpace(self, slide_image): 
+        """Removes the black space from a microscope slide image"""
         limit = 10
 
         bin_img = cv2.cvtColor(slide_image, cv2.COLOR_BGR2GRAY)
