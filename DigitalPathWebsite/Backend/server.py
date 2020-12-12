@@ -11,6 +11,7 @@ from flask_pymongo import PyMongo
 from flask_ngrok import run_with_ngrok
 
 from ImageStichAlgorithm.removeblackspace import removeBlackSpace
+from APIKEYS import MONGODB_KEY
 import imutils
 import cv2
 import numpy as np
@@ -20,7 +21,7 @@ import numpy as np
 
 app = Flask(__name__)
 
-mongoUri = "mongodb+srv://averma332:Timeline123#@digpath2020.mujb1.mongodb.net/digitalpath2020?retryWrites=true&w=majority"
+mongoUri = MONGODB_KEY
 
 cors = CORS(app) # Sets my Cross Origin Access Header to Allow Access so my phone can send data to my server
 

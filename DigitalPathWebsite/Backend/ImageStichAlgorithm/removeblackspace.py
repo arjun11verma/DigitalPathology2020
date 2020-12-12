@@ -96,7 +96,7 @@ class removeBlackSpace:
         byte_list = byte_list.tobytes()
         byte_list = base64.b64encode(byte_list)
 
-        return byte_list
+        return str(byte_list, 'utf-8')
     
     def pythonRemoveBlackSpace(self, slide_image): 
         """Removes the black space from a microscope slide image"""
