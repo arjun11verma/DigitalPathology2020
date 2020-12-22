@@ -30,8 +30,6 @@ public class ConfirmCameraView extends BaseView {
     public ConfirmCameraView(Context context) {
         super(context);
 
-        checkLoggedIn();
-
         activity.setContentView(R.layout.confirm_camera_activity);
 
         slideName = activity.findViewById(R.id.slideType);

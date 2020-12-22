@@ -7,6 +7,7 @@
 package com.example.digitalpath2020;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvException;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
@@ -56,6 +57,12 @@ public class Task extends TimerTask {
         if(!centered) {
             topFlag = true;
             leftFlag = true;
+            bottomFlag = false;
+            rightFlag = false;
+            stopRowTop = 0;
+            stopRowBottom = 720;
+            stopColLeft = 0;
+            stopColRight = 720;
 
             Imgproc.cvtColor(mRGBAT, mGRAY, Imgproc.COLOR_BGR2GRAY);
 
@@ -85,11 +92,22 @@ public class Task extends TimerTask {
             centered = true;
         }
 
-        mRET = new Mat(mRGBAT, (new Rect(stopColLeft + divider, stopRowTop + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider)));
-        if(mRET.size().width == 0 || mRET.size().height == 0) {
+        System.out.println("Top/Bottom " + stopRowTop + " " + stopRowBottom);
+        System.out.println("Left/Right " + stopColLeft + " " + stopColRight);
+        System.out.println("Divider: " + divider);
+
+        try {
+            mRET = new Mat(mRGBAT, (new Rect(stopColLeft + divider, (720-stopRowBottom) + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider)));
+            System.out.println("Correct centering");
+        } catch (CvException e) {
             mRET = mRGBAT;
+            System.out.println(e);
         }
 
         Imgproc.resize(mRET, mRET, mRGBA.size());
+    }
+
+    public void resetCentered() {
+        centered = false;
     }
 }

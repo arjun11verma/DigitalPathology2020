@@ -29,6 +29,12 @@ public class LoginView extends BaseView {
      */
     public LoginView(Context context) {
         super(context);
+
+        if(activity.isLoggedIn()) {
+            activity.setUsername(app.currentUser().getProfile().getEmail());
+            activity.changeView(new ConfirmCameraView(activity));
+        }
+
         activity.setContentView(R.layout.login_activity);
 
         usernameText = activity.findViewById(R.id.username);
@@ -76,6 +82,7 @@ public class LoginView extends BaseView {
                         activity.changeView(new ConfirmCameraView(activity));
                         activity.setLoggedIn(true);
                         System.out.println("Successfully logged into MongoDB. Nice!");
+                        System.out.println(app.currentUser().getProfile().getEmail());
                     } else {
                         System.out.println("You couldn't log in.");
                         String error = "Your username or password is incorrect.";

@@ -42,8 +42,6 @@ public class AfterCaptureView extends BaseView {
     public AfterCaptureView(Context context) {
         super(context);
 
-        checkLoggedIn();
-
         activity.setContentView(R.layout.after_capture_activity);
 
         uploading = activity.findViewById(R.id.uploadingBar);

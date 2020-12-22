@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
 
     private int maxNumImages = 50; // The maximum number of pictures that will be taken
-    private int delay = 1000; // Delay until camera starts in milliseconds
-    private int period = 3000; // Period of time between each picture being taken
+    private int delay = 2000; // Delay until camera starts in milliseconds
+    private int period = 2000; // Period of time between each picture being taken
     private Timer timer; // Timer that will control when each picture is being taken
     private Task timerTask; // Task to be executed that will take in and do rudimentary processing on images
     private boolean clicked = false; // Prevents a crash by stopping the button after it has been clicked once
@@ -78,16 +78,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onCreate(savedInstanceState);
         initDB();
         serverConnection = new ServerConnect(this);
-
-        System.out.println(database.getTaskApp().currentUser());
-
-        if (database.getTaskApp().currentUser() == null || !database.getTaskApp().currentUser().isLoggedIn()) {
-            changeView(new LoginView(this));
-        } else {
-            loggedIn = true;
-            username = database.getTaskApp().currentUser().getProfile().getEmail();
-            changeView(new ConfirmCameraView(this));
-        }
+        changeView(new LoginView(this));
     }
 
     /**
@@ -105,6 +96,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void logout() {
         database.logout();
         loggedIn = false;
+    }
+
+    /**
+     * Determines whether a user is logged in or not
+     * @return Boolean representing whether the user is logged in or not
+     */
+    public boolean isLoggedIn() {
+        return (database.getTaskApp().currentUser() != null && database.getTaskApp().currentUser().getProfile().getEmail() != null);
     }
 
     /**
@@ -126,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             matList.clear();
             timer = new Timer();
             timerTask = new Task(this);
+            timerTask.resetCentered();
             timer.schedule(timerTask, delay, period);
             cameraView.enableView();
             clicked = true;
@@ -331,9 +331,5 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public void setLoggedIn(boolean set) {
         loggedIn = set;
-    }
-
-    public boolean isLoggedIn() {
-        return loggedIn;
     }
 }

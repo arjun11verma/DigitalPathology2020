@@ -54,13 +54,13 @@ def acceptImages():
    name = post_data['name']
    slide_type = post_data['slide']
    cancer_type = post_data['cancer']
-   time_stamp = (datetime.now()).strftime("%d/%m/%Y %H:%M:%S")
+   time_stamp = (datetime.now()).strftime("%m/%d/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
    print(len(slide_image))
 
-   if(len(slide_image) >= 1000):
-      mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image}
+   if(len(slide_image) >= 500):
+      mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
       print(images.insert_one(mongo_document).inserted_id)
       return {'response': "Data posted successfully!"}
    

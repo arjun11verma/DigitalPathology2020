@@ -29,7 +29,7 @@ public abstract class BaseView extends View {
      * Checks if the current user is logged in and redirects them to the login page if not
      */
     public void checkLoggedIn() {
-        if(activity.isLoggedIn()) {
+        if(!activity.isLoggedIn()) {
             activity.changeView(new LoginView(activity));
         }
     }
