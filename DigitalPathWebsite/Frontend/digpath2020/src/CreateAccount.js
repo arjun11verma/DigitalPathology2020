@@ -1,9 +1,20 @@
+/**
+ * Class representing the create account page
+ * @version 1.0
+ * @author Arjun Verma
+ */
+
 import React, {Component} from 'react';
 import {Typography, Container, Paper, TextField, Button} from '@material-ui/core';
 
 import {create} from './Database';
 
 class CreateAccount extends Component {
+    /**
+     * Constructor for the class
+     * Sets the state to contain a boolean representing the validity of a username
+     * @param {*} props Props for creating a React Component
+     */
     constructor(props) {
         super(props);
         this.state = {
@@ -11,6 +22,9 @@ class CreateAccount extends Component {
         };
     }
 
+    /**
+     * Asynchronous function for creating an account
+     */
     create = async() => {
         const email = document.getElementById('username').value;
         const password = document.getElementById('password').value;
@@ -24,6 +38,9 @@ class CreateAccount extends Component {
         }
     }
 
+    /**
+     * Renders the UI components of the Create Account page
+     */
     render() {
         return (
             <div style={{height: "100vh"}}>

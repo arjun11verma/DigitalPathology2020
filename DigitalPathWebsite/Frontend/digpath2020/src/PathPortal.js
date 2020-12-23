@@ -1,3 +1,10 @@
+/**
+ * Class for the Pathology Portal Page
+ * @version 1.0
+ * @author Arjun Verma
+ */
+
+
 import React, { Component } from 'react';
 import { Paper, Typography, Grid, AppBar, TextField, CardActionArea } from '@material-ui/core';
 
@@ -5,6 +12,9 @@ import { apolloClient } from './ApolloClient'
 import { check } from './Database';
 import gql from "graphql-tag";
 
+/**
+ * Inner class for the clickable cards representing the different patients 
+ */
 class SlideView extends Component {
     constructor(props) {
         super(props);
@@ -36,6 +46,12 @@ class SlideView extends Component {
 }
 
 class PathPortal extends Component {
+    /**
+     * Constructor for the Pathology Portal class
+     * Sets the state to contain a String representing the doctor's username, A String/React Component representing the slides available for diagnosis,
+     * a boolean representing if no slides with a certain type of cancer were found, and a boolean representing if no slides with a certain slide type were found
+     * @param {*} props 
+     */
     constructor(props) {
         super(props);
         this.state = {
@@ -46,32 +62,24 @@ class PathPortal extends Component {
         }
     }
 
+    /**
+     * 
+     * @param {String} slide Slide type
+     * @param {String} cancer Cancer type
+     * @param {String} date Date of recording
+     * @param {String} id Id of the image
+     * @param {String} diagnosis Diagnosis status
+     */
     makeSlideBox = (slide, cancer, date, id, diagnosis) => {
         return (
             <SlideView slide={slide} cancer={cancer} date={date} id={id} diagnosis = {diagnosis} />
         )
     }
 
-    queryName = async (input) => {
-        apolloClient.query({
-            query: gql`
-            query ImageQuery($name: String!) {
-                imageSets(query: {name: $name}) {
-                    cancer
-                    slide
-                    timestamp
-                    _id
-                }
-            }`,
-            variables: { name: input }
-        }).then((res) => {
-            return res.data.ImageSet.objectId;
-        }).catch(err => {
-            console.log(err);
-            return "";
-        });
-    }
-
+    /**
+     * Queries for an image based off of cancer
+     * @param {String} input cancer type of the image
+     */
     queryCancer = async (input) => {
         apolloClient.query({
             query: gql`
@@ -92,6 +100,10 @@ class PathPortal extends Component {
         });
     }
 
+    /**
+     * Queries for an image based off of slide
+     * @param {String} input slide type of the image
+     */
     querySlide = async (input) => {
         apolloClient.query({
             query: gql`
@@ -112,6 +124,11 @@ class PathPortal extends Component {
         });
     }
 
+    /**
+     * Called when the page is opened
+     * Checks if the user is logged in and promptly redirects him/her based on the result
+     * Queries the database for all available cancer slide images
+     */
     componentDidMount = () => {
         check().then((loggedIn) =>{
             if(!loggedIn) document.location.href = "/";
@@ -144,6 +161,9 @@ class PathPortal extends Component {
         });
     }
 
+    /**
+     * Renders the UI of the Pathology Portal
+     */
     render() {
         return (
             <div>

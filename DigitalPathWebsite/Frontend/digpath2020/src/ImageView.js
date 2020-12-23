@@ -1,3 +1,9 @@
+/**
+ * Class for the Slide Image Viewing and Diagnosis Page
+ * @version 1.0
+ * @author Arjun Verma
+ */
+
 import React, { Component } from 'react';
 import Zoom from 'react-medium-image-zoom'
 import 'react-medium-image-zoom/dist/styles.css'
@@ -9,7 +15,14 @@ import axios from 'axios';
 
 const APIURL = 'http://localhost:3000';
 
+/**
+ * Inner class for displaying the image
+ */
 class ImageViewCard extends Component {
+    /**
+     * Constructor for the class
+     * @param {*} props 
+     */
     constructor(props) {
         super(props);
         this.state = {
@@ -17,6 +30,9 @@ class ImageViewCard extends Component {
         };
     }
 
+    /**
+     * Renders the Image UI Component
+     */
     render() {
         return (
             <div>
@@ -29,6 +45,12 @@ class ImageViewCard extends Component {
 }
 
 class ImageView extends Component {
+    /**
+     * Constructor for the class
+     * Sets the state to contain a String of image data, a String list representing the URL (which contains the objectID of the image data),
+     * a String for the patient's email, a String for the patient's name, a React Component for the diagnosis, and a String for a message above the diagnosis
+     * @param {*} props 
+     */
     constructor(props) {
         super(props);
         this.state = {
@@ -50,6 +72,9 @@ class ImageView extends Component {
         };
     }
 
+    /**
+     * Queries the database for the image and user data from the state objectId
+     */
     queryImage = async () => {
         apolloClient.query({
             query: gql`
@@ -95,10 +120,17 @@ class ImageView extends Component {
         });
     }
 
+    /**
+     * Creates an ImageView Component from the given image data
+     * @param {String} imgData 
+     */
     processImages = (imgData) => {
         return <ImageViewCard alt="Slide" src={"data:image/jpeg;base64," + imgData} />;
     }
 
+    /**
+     * Sends the diagnosis typed in by the doctor to the patient and saves it to the database
+     */
     sendDiagnosis = () => {
         const diagnosis = document.getElementById('diagnosis').value;
 
@@ -131,16 +163,25 @@ class ImageView extends Component {
         });
     }
 
+    /**
+     * Saves the temporary diagnosis of a doctor
+     */
     saveData = async() => {
         axios.post(APIURL + '/api/saveCurrentDiagnosis', { 'patientID': this.state.objectId[this.state.objectId.length - 1], 'currentDiagnosis': document.getElementById('diagnosis').value }).then((res) => {
             window.location.href = '/';
         });
     }
 
+    /**
+     * Calls the query image method when the page is opened
+     */
     componentDidMount = () => {
         this.queryImage();
     }
 
+    /**
+     * Renders the UI Components of the page
+     */
     render() {
         return (
             <div>

@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * @return Boolean representing whether the user is logged in or not
      */
     public boolean isLoggedIn() {
-        return (database.getTaskApp().currentUser() != null && database.getTaskApp().currentUser().getProfile().getEmail() != null);
+        return (database.getTaskApp().currentUser() != null && database.getTaskApp().currentUser().isLoggedIn());
     }
 
     /**

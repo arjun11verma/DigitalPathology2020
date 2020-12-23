@@ -1,3 +1,9 @@
+/**
+ * Backend for handling email sending and diagnosis saving
+ * @version 1.0
+ * @author Arjun Verma
+ */
+
 const express = require('express'); // HTTP Library for defining responses to calls
 const cors = require('cors'); // Library for Cross Origin Resource Sharing 
 const bodyParser = require('body-parser'); // Library to parse request bodies
@@ -12,6 +18,9 @@ app.use(bodyParser.json());
 
 let currentDiagnoses = new Map(); // Map listing all of the current diagnoses being worked on and storing temporary saved data
 
+/**
+ * Creates a gmail SMTP transport for sending emails
+ */
 const emailTransport = gmailAPI.createTransport(smtpTransport({
     service: 'gmail',
     host: 'smtp.gmail.com',
@@ -19,26 +28,41 @@ const emailTransport = gmailAPI.createTransport(smtpTransport({
         user: "digitalpathology2020@gmail.com",
         pass: "Timeline123#"
     }
-})); // creates gmail API for sending emails
+}));
 
+/**
+ * Defines a POST call to check whether a patient is already receiving a diagnosis and to return the saved state of the diagnosis
+ * @param {JSON Object} req Contains the unique ID of a patient and the username of the doctor. 
+ * @returns {JSON Object} res Contains whether the current patient is already receiving a diagnosis and the saved state of the diagnosis being received
+ */
 app.post('/api/updateCurrentDiagnosis', (req, res) => {
     var currentUser = false;
-    
-    if(currentDiagnoses.has(req.body.patientID)) {
-        if(req.body.doctorID !== currentDiagnoses.get(req.body.patientID).doctorID) currentUser = true;
+
+    if (currentDiagnoses.has(req.body.patientID)) {
+        if (req.body.doctorID !== currentDiagnoses.get(req.body.patientID).doctorID) currentUser = true;
         console.log(currentDiagnoses);
     }
-    else currentDiagnoses.set(req.body.patientID, {'doctorID': req.body.doctorID, 'currentDiagnosis': "Please input your diagnosis here"});
+    else currentDiagnoses.set(req.body.patientID, { 'doctorID': req.body.doctorID, 'currentDiagnosis': "Please input your diagnosis here" });
 
-    res.status(200).send({'using': currentUser, 'currentDiagnosis': currentDiagnoses.get(req.body.patientID).currentDiagnosis});
-}); // Defines a POST call for updating the list of current diagnoses
+    res.status(200).send({ 'using': currentUser, 'currentDiagnosis': currentDiagnoses.get(req.body.patientID).currentDiagnosis });
+});
 
+/**
+ * Defines a POST call for removing a patient from the server once his/her diagnosis has been completed 
+ * @param {JSON Object} req Contains the unique ID of a patient
+ * @returns {JSON Object} res A successful 200 response
+ */
 app.post('/api/removeCurrentDiagnosis', (req, res) => {
     currentDiagnoses.delete(req.body.patientID);
     res.status(200).send();
     console.log(currentDiagnoses);
-}); // Defines a POST call for removing a diagnosis from the list, signifying its completion 
+});
 
+/**
+ * Defines a POST call for saving a patient's diagnosis before it has been completed 
+ * @param {JSON Object} req Contains information detailing the current diagnosis of a patient and his/her unique ID
+ * @returns {JSON Object} res A successful 200 response
+ */
 app.post('/api/saveCurrentDiagnosis', (req, res) => {
     var updatedDiagnosis = currentDiagnoses.get(req.body.patientID);
     updatedDiagnosis.currentDiagnosis = req.body.currentDiagnosis;
@@ -46,8 +70,13 @@ app.post('/api/saveCurrentDiagnosis', (req, res) => {
 
     console.log(currentDiagnoses);
     res.status(200).send();
-}); // Defines a POST call for saving a dianogsis before it has been completed
+});
 
+/**
+ * Defines a POST call for sending a diagnosis email to the patient 
+ * @param {JSON Object} req Contains information detailing the email address, name and diagnosis of a cancer patient (these fields remain anonymous on the frontend)
+ * @returns {JSON Object} res Response detailing the success of the email 
+ */
 app.post('/api/sendEmail', (req, res) => {
     console.log(req.body);
     emailTransport.sendMail({
@@ -57,14 +86,17 @@ app.post('/api/sendEmail', (req, res) => {
         text: "Hello, I hope this message finds you well.\nThis is the cancer diagnosis for " + req.body.name + ". \n" + req.body.message
     }, (error, response) => {
         console.log(error);
-        if(error) {
+        if (error) {
             res.status(500).send(error);
         } else {
             res.status(200).send("Email Sent Successfully!");
         }
     });
-}); // Defines a POST call for sending an email to the patient
+});
 
+/**
+ * Runs the server on port 3000
+ */
 app.listen(PORT, () => {
     console.log("Listening on port " + PORT);
-}); // Runs the server on port 3000
+}); 

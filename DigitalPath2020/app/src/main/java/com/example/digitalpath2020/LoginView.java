@@ -32,6 +32,7 @@ public class LoginView extends BaseView {
 
         if(activity.isLoggedIn()) {
             activity.setUsername(app.currentUser().getProfile().getEmail());
+            activity.setLoggedIn(true);
             activity.changeView(new ConfirmCameraView(activity));
         }
 

@@ -1,9 +1,20 @@
+/**
+ * Class for the Login Page
+ * @version 1.0
+ * @author Arjun Verma
+ */
+
 import React, { Component } from 'react';
 import {Grid, Typography, Container, Paper, TextField, Button, Link} from '@material-ui/core';
 
 import {logIn} from './Database';
 
 class LoginPage extends Component {
+    /**
+     * Constructor for the login page
+     * Sets the state to contain a boolean determining whether the username was successful and a boolean determining whether the password was successful
+     * @param {*} props Props for the login page component
+     */
     constructor(props) {
         super(props);
         this.state = {
@@ -12,6 +23,9 @@ class LoginPage extends Component {
         }
     }
 
+    /**
+     * Asynchronous function to log in a user and redirect him/her
+     */
     login = async() => {
         const email = document.getElementById('username').value;
         const password = document.getElementById('password').value;
@@ -26,6 +40,9 @@ class LoginPage extends Component {
         }
     }
 
+    /**
+     * Renders the UI of the login page
+     */
     render() {
         return (
             <div style={{height: "100vh"}}>
