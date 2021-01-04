@@ -1,45 +1,47 @@
 /**
- * Class representing the create account page
+ * Class for the Login Page
  * @version 1.0
  * @author Arjun Verma
  */
 
-import React, {Component} from 'react';
-import {Typography, Container, Paper, TextField, Button} from '@material-ui/core';
+import React, { Component } from 'react';
+import {Grid, Typography, Container, Paper, TextField, Button, Link} from '@material-ui/core';
+import {logIn} from './Database';
 
-import {create} from './Database';
-
-class CreateAccount extends Component {
+class LoginPage extends Component {
     /**
-     * Constructor for the class
-     * Sets the state to contain a boolean representing the validity of a username
-     * @param {*} props Props for creating a React Component
+     * Constructor for the login page
+     * Sets the state to contain a boolean determining whether the username was successful and a boolean determining whether the password was successful
+     * @param {*} props Props for the login page component
      */
     constructor(props) {
         super(props);
         this.state = {
-            invalidUsername: false
-        };
+            usernameFailed: false,
+            passwordFailed: false
+        }
     }
 
     /**
-     * Asynchronous function for creating an account
+     * Asynchronous function to log in a user and redirect him/her
      */
-    create = async() => {
+    login = async() => {
         const email = document.getElementById('username').value;
         const password = document.getElementById('password').value;
+        
         try {
-            await create(email, password);
-            document.location.href = ('/');
+            await logIn(email, password); 
+            document.location.href = ('/Homepage/' + email);
         } catch (error) {
             this.setState({
-                invalidUsername: true
+                passwordFailed: true,
+                usernameFailed: true
             });
         }
     }
 
     /**
-     * Renders the UI components of the Create Account page
+     * Renders the UI of the login page
      */
     render() {
         return (
@@ -47,7 +49,7 @@ class CreateAccount extends Component {
                 <div style = {{backgroundColor: "whitesmoke", height: "100vh"}}>
                     <Container>
                         <Typography style={{paddingTop: "10%", marginBottom: "-5%", textAlign: "center"}} component="h1" variant="h3">
-                            Create an Account
+                            Digital Pathology Portal
                         </Typography>
                     </Container>
                     <Container component = "main" maxWidth = "sm" style={{paddingTop: "5%"}}>
@@ -59,7 +61,7 @@ class CreateAccount extends Component {
                                     required
                                     label="Username"
                                     id="username"
-                                    error = {this.state.invalidUsername}
+                                    error = {this.state.usernameFailed}
                                     autoFocus
                                     style={{width: "80%", marginLeft: "10%"}}
                                 />
@@ -71,16 +73,24 @@ class CreateAccount extends Component {
                                     label="Password"
                                     type="password"
                                     id="password"
+                                    error = {this.state.passwordFailed}
                                     style={{width: "80%", marginLeft: "10%"}}
                                 />
                                 <Button
-                                    onClick = {this.create}
+                                    onClick = {this.login}
                                     fullWidth
                                     variant="contained"
                                     style={{width: "80%", marginLeft: "10%", marginTop: "3%", marginBottom: "5%"}}
                                 >
-                                    Create Account!
+                                    Sign In
                                 </Button>
+                                <Grid container style={{marginBottom: "5%"}}>
+                                    <Grid item xs>
+                                        <Link style={{width: "80%", marginLeft: "10%", marginTop: "5%", marginBottom: "5%"}} href="/CreateAccount">
+                                            {"Don't have an account? Sign up!"}
+                                        </Link>
+                                    </Grid>
+                                </Grid>
                             </form>
                         </Paper>
                     </Container>
@@ -90,4 +100,4 @@ class CreateAccount extends Component {
     }
 }
 
-export default CreateAccount;
+export default LoginPage;

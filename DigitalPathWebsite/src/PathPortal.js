@@ -6,7 +6,7 @@
 
 
 import React, { Component } from 'react';
-import { Paper, Typography, Grid, AppBar, TextField, CardActionArea } from '@material-ui/core';
+import { Paper, Typography, Grid, AppBar, CardActionArea } from '@material-ui/core';
 
 import { apolloClient } from './ApolloClient'
 import { check } from './Database';
@@ -31,7 +31,7 @@ class SlideView extends Component {
         return (
             <div>
                 <Paper style={{ backgroundColor: "lavender", borderRadius: 5, margin: 10 }}>
-                    <CardActionArea onClick = {this.showImage}>
+                    <CardActionArea onClick={this.showImage}>
                         <Grid container direction="row">
                             <Typography variant="body1" style={{ fontFamily: "Garamond", margin: 5 }}>Slide Type: {this.props.slide} </Typography>
                             <Typography variant="body1" style={{ fontFamily: "Garamond", margin: 5 }}>Cancer Type: {this.props.cancer} </Typography>
@@ -56,9 +56,8 @@ class PathPortal extends Component {
         super(props);
         this.state = {
             username: document.location.href.split('/')[4],
-            failedCancer: false,
-            failedSlide: false,
-            activeSlides: "Nothing Selected."
+            diagnosedSlides: "",
+            undiagnosedSlides: ""
         }
     }
 
@@ -72,56 +71,29 @@ class PathPortal extends Component {
      */
     makeSlideBox = (slide, cancer, date, id, diagnosis) => {
         return (
-            <SlideView slide={slide} cancer={cancer} date={date} id={id} diagnosis = {diagnosis} />
+            <SlideView slide={slide} cancer={cancer} date={date.split(" ")[0]} id={id} diagnosis={diagnosis} />
         )
     }
 
     /**
-     * Queries for an image based off of cancer
-     * @param {String} input cancer type of the image
-     */
-    queryCancer = async (input) => {
-        apolloClient.query({
-            query: gql`
-            query ImageQuery($cancer: String!) {
-                imageSets(query: {cancer: $cancer}) {
-                    cancer
-                    slide
-                    timestamp
-                    _id
-                }
-            }`,
-            variables: { cancer: input }
-        }).then((res) => {
-            return res.data.ImageSet.objectId;
-        }).catch(err => {
-            console.log(err);
-            return "";
-        });
-    }
-
-    /**
-     * Queries for an image based off of slide
-     * @param {String} input slide type of the image
-     */
-    querySlide = async (input) => {
-        apolloClient.query({
-            query: gql`
-            query ImageQuery($slide: String!) {
-                imageSets(query: {slide: $slide}) {
-                    cancer
-                    slide
-                    timestamp
-                    _id
-                }
-            }`,
-            variables: { slide: input }
-        }).then((res) => {
-            return res.data.ImageSet.objectId;
-        }).catch(err => {
-            console.log(err);
-            return "";
-        });
+    * Compares two dates to see which is most recent     
+    * @param {String} dateOne 
+    * @param {String} dateTwo 
+    */
+    compareDate = (dateOne, dateTwo) => {
+        dateOne = dateOne.split(" ")[0].split("/").map((num) => parseInt(num));
+        dateTwo = dateTwo.split(" ")[0].split("/").map((num) => parseInt(num));
+        if (dateOne[2] > dateTwo[2]) return true
+        else if (dateOne[2] < dateTwo[2]) return false
+        else {
+            if (dateOne[0] > dateTwo[0]) return true
+            else if (dateOne[0] < dateTwo[0]) return false
+            else {
+                if (dateOne[1] > dateTwo[1]) return true
+                else if (dateOne[1] < dateTwo[1]) return false
+                else return true
+            }
+        }
     }
 
     /**
@@ -130,9 +102,9 @@ class PathPortal extends Component {
      * Queries the database for all available cancer slide images
      */
     componentDidMount = () => {
-        check().then((loggedIn) =>{
-            if(!loggedIn) document.location.href = "/";
-        })
+        check().then((loggedIn) => {
+            if (!loggedIn) window.location.href = "/";
+        });
 
         apolloClient.query({
             query: gql`
@@ -147,17 +119,40 @@ class PathPortal extends Component {
             }`
         }).then((res) => {
             const response = res.data.imageSets;
-            console.log(response);
-            var activeImages = [];
+            var diagnosedSlides = [];
+            var undiagnosedSlides = [];
+            var addDiagnosed, addUndiagnosed;
+
             response.forEach(data => {
-                activeImages.push(this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, data.diagnosis === "N" ? "No" : "Yes"));
+                if (data.diagnosis === "N") {
+                    addUndiagnosed = true;
+                    for (var i = 0; i < undiagnosedSlides.length; i++) {
+                        if (this.compareDate(data.timestamp, undiagnosedSlides[i].props.date)) {
+                            undiagnosedSlides.splice(i, 0, this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "No"));
+                            addUndiagnosed = false;
+                            break;
+                        }
+                    }
+                    if (addUndiagnosed) undiagnosedSlides.push(this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "No"));
+                } else {
+                    addDiagnosed = true;
+                    for (var a = 0; a < diagnosedSlides.length; a++) {
+                        if (this.compareDate(data.timestamp, diagnosedSlides[a].props.date)) {
+                            diagnosedSlides.splice(a, 0, this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "Yes"));
+                            addDiagnosed = false;
+                            break;
+                        }
+                    }
+                    if (addDiagnosed) diagnosedSlides.push(this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "Yes"));
+                }
             });
+
             this.setState({
-                activeSlides: activeImages
-            })
-        }).catch(err => {
-            console.log(err);
-            return "";
+                diagnosedSlides: diagnosedSlides,
+                undiagnosedSlides: undiagnosedSlides
+            });
+        }).catch((error) => {
+            console.log(error);
         });
     }
 
@@ -173,15 +168,15 @@ class PathPortal extends Component {
                             <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey" }}> Digital Pathology </Typography>
                             <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncologic Diagnosis </Typography>
                         </Grid>
-                        <Grid item alignItems = "center" style = {{marginLeft: "auto"}}>
-                            <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey", margin: 10}}>Pathology Portal</Typography>
+                        <Grid item alignItems="center" style={{ marginLeft: "auto" }}>
+                            <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey", margin: 10 }}>Pathology Portal</Typography>
                         </Grid>
                     </Grid>
                 </AppBar>
 
-                <Grid container direction="row" style={{ }}>
+                <Grid container direction="row" style={{}}>
                     <Grid xs={6}>
-                        <Paper style={{ height: "630px", overflowY: "hidden" }}>
+                        <Paper style={{ height: "84vh", overflowY: "hidden" }}>
                             <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10 }}>
                                 Welcome to the Pathology Portal {this.state.username.split('@')[0]}!
                             </Typography>
@@ -189,30 +184,17 @@ class PathPortal extends Component {
                             <Typography variant="h6" style={{ fontFamily: "Garamond", margin: 10 }}>
                                 Here, you can view the Whole Slide Images of several patients who have not yet recieved diagnoses. The whole slide images are listed to the right, and you can search for specific types of slides or cancers below. Thank you for contributing to the Global Pathology effort!
                             </Typography>
-
-                            <TextField
-                                variant="outlined"
-                                margin="normal"
-                                label="Enter Cancer Type"
-                                id="cancer"
-                                error={this.state.failedCancer}
-                                style={{ width: "60%", margin: 10 }}
-                            />
-
-                            <TextField
-                                variant="outlined"
-                                margin="normal"
-                                label="Enter Slide Type"
-                                id="slide"
-                                error={this.state.failedSlide}
-                                style={{ width: "60%", margin: 10 }}
-                            />
                         </Paper>
                     </Grid>
 
                     <Grid xs={6}>
-                        <Paper style={{ height: "630px", overflowY: "scroll" }}>
-                            {this.state.activeSlides}
+                        <Paper style={{ height: "42vh", overflowY: "scroll" }}>
+                            <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10, position: "static" }}>Undiagnosed Slides</Typography>
+                            {this.state.undiagnosedSlides}
+                        </Paper>
+                        <Paper style={{ height: "42vh", overflowY: "scroll" }}>
+                            <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10, position: "static" }}>Diagnosed Slides</Typography>
+                            {this.state.diagnosedSlides}
                         </Paper>
                     </Grid>
                 </Grid>

@@ -7,7 +7,7 @@
 const express = require('express'); // HTTP Library for defining responses to calls
 const cors = require('cors'); // Library for Cross Origin Resource Sharing 
 const bodyParser = require('body-parser'); // Library to parse request bodies
-const PORT = 3000;
+const PORT = 3001;
 
 const gmailAPI = require('nodemailer'); // API for sending emails
 const smtpTransport = require('nodemailer-smtp-transport'); // Simple Mail Transfer Protocol Transport
@@ -95,7 +95,7 @@ app.post('/api/sendEmail', (req, res) => {
 });
 
 /**
- * Runs the server on port 3000
+ * Runs the server on port 3001
  */
 app.listen(PORT, () => {
     console.log("Listening on port " + PORT);

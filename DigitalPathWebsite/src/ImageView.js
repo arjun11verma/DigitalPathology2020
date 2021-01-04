@@ -12,8 +12,8 @@ import { Paper, Grid, Typography, AppBar, TextareaAutosize, Button } from '@mate
 import { apolloClient } from './ApolloClient';
 import gql from 'graphql-tag';
 import axios from 'axios';
-
-const APIURL = 'http://localhost:3000';
+import {server_url} from 'axios';
+import { check } from './Database';
 
 /**
  * Inner class for displaying the image
@@ -44,6 +44,8 @@ class ImageViewCard extends Component {
     }
 }
 
+const url_list = document.location.href.split('/');
+
 class ImageView extends Component {
     /**
      * Constructor for the class
@@ -55,7 +57,7 @@ class ImageView extends Component {
         super(props);
         this.state = {
             imageData: null,
-            objectId: document.location.href.split('/'),
+            objectId: url_list[url_list.length - 1],
             emailUser: null,
             nameUser: null,
             determineDiagnosis: <div>
@@ -86,7 +88,7 @@ class ImageView extends Component {
                     name
                 }
             }`,
-            variables: { _id: (this.state.objectId[this.state.objectId.length - 1]) }
+            variables: { _id: this.state.objectId }
         }).then((res) => {
             const image = this.processImages(res.data.imageSet.image);
             const diagnosis = res.data.imageSet.diagnosis;
@@ -102,7 +104,7 @@ class ImageView extends Component {
                     diagnosisMessage: "This patient has already recieved a diagnosis. It can be viewed below."
                 });
             } else {
-                axios.post(APIURL + '/api/updateCurrentDiagnosis', { 'patientID': this.state.objectId[this.state.objectId.length - 1], 'doctorID': this.state.objectId[this.state.objectId.length - 3] }).then((res) => {
+                axios.post(server_url + 'updateCurrentDiagnosis', { 'patientID': this.state.objectId[this.state.objectId.length - 1], 'doctorID': this.state.objectId[this.state.objectId.length - 3] }).then((res) => {
                     console.log(res);
                     if (res.data.using) {
                         this.setState({
@@ -134,7 +136,7 @@ class ImageView extends Component {
     sendDiagnosis = () => {
         const diagnosis = document.getElementById('diagnosis').value;
 
-        axios.post(APIURL + '/api/sendEmail', { 'address': "arjunverma1com@gmail.com", 'name': this.state.nameUser, 'message': diagnosis }).then((res) => {
+        axios.post(server_url + 'sendEmail', { 'address': "arjunverma1com@gmail.com", 'name': this.state.nameUser, 'message': diagnosis }).then((res) => {
             if (res.status === 200) {
                 apolloClient.mutate({
                     mutation: gql`
@@ -144,13 +146,13 @@ class ImageView extends Component {
                                     }
                                 }`,
                     variables: {
-                        _id: (this.state.objectId[this.state.objectId.length - 1]),
+                        _id: (this.state.objectId),
                         ImageSetUpdateInput: {
                             "diagnosis": diagnosis
                         }
                     }
                 }).then((response) => {
-                    axios.post(APIURL + '/api/removeCurrentDiagnosis', { 'patientID': this.state.objectId[this.state.objectId.length - 1] }).then((r) => {
+                    axios.post(server_url + 'removeCurrentDiagnosis', { 'patientID': this.state.objectId }).then((r) => {
                         document.location.href = "/";
                     });
                 }).catch((err) => {
@@ -167,7 +169,7 @@ class ImageView extends Component {
      * Saves the temporary diagnosis of a doctor
      */
     saveData = async() => {
-        axios.post(APIURL + '/api/saveCurrentDiagnosis', { 'patientID': this.state.objectId[this.state.objectId.length - 1], 'currentDiagnosis': document.getElementById('diagnosis').value }).then((res) => {
+        axios.post(server_url + 'saveCurrentDiagnosis', { 'patientID': this.state.objectId, 'currentDiagnosis': document.getElementById('diagnosis').value }).then((res) => {
             window.location.href = '/';
         });
     }
@@ -176,6 +178,10 @@ class ImageView extends Component {
      * Calls the query image method when the page is opened
      */
     componentDidMount = () => {
+        check().then((loggedIn) => {
+            if(!loggedIn) window.location.href = "/";
+        });
+
         this.queryImage();
     }
 
