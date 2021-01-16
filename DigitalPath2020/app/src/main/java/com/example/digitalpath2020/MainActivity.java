@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     int aspectWidth, aspectHeight;
 
     private int maxNumImages = 50; // The maximum number of pictures that will be taken
-    private int delay = 2000; // Delay until camera starts in milliseconds
+    private int delay = 1000; // Delay until camera starts in milliseconds
     private int period = 2000; // Period of time between each picture being taken
     private Timer timer; // Timer that will control when each picture is being taken
     private Task timerTask; // Task to be executed that will take in and do rudimentary processing on images
@@ -232,7 +232,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             double scaleFactor = aspectHeight > aspectWidth ? aspectWidth/baseScreen.size().width : aspectHeight/baseScreen.size().height;
             Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
             Mat retImage = new Mat(baseScreen.rows(), baseScreen.cols(), baseScreen.type());
-            Core.copyMakeBorder(baseScreen, retImage, 0, 0, 120, 120, Core.BORDER_CONSTANT);
+
+            int top = 0, bottom = 0, left = 0, right = 0;
+            if(baseScreen.size().width < aspectWidth) {
+                left = (int)((aspectWidth - baseScreen.size().width)/2); right = left;
+            } else {
+                top = (int)((aspectHeight - baseScreen.size().height)/2); bottom = top;
+            }
+
+            Core.copyMakeBorder(baseScreen, retImage, top, bottom, left, right, Core.BORDER_CONSTANT);
             baseScreen = retImage;
             System.out.println(retImage.size());
         }
