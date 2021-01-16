@@ -44,7 +44,7 @@
         android:id="@+id/createTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="130dp"
+        android:layout_marginTop="200dp"
         android:text="Create an Account"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         android:textSize="24sp"

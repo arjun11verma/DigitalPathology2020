@@ -12,6 +12,9 @@ import android.view.View;
 
 import org.opencv.android.JavaCameraView;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MainView extends BaseView {
     /**
      * Constructor for the MainView class

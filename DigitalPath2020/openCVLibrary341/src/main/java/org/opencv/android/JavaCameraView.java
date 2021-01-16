@@ -287,8 +287,6 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
             this.notify();
         }
 
-        Log.d(TAG, "We did it boys, we killed the thread.");
-
         /* Now release camera */
         releaseCamera();
 

@@ -73,7 +73,7 @@ public class AfterCaptureView extends BaseView {
             @Override
             public void onClick(View v) {
                 activity.resetClick();
-                activity.changeView(new ConfirmCameraView(activity));
+                activity.changeView(new MainView(activity));
             }
         });
     }

@@ -13,13 +13,20 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.widget.FrameLayout;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private JavaCameraView cameraView; // View that will be accessing the camera, taking pictures and displaying them
     private Mat baseScreen; // Mat objects that will act as temporary storage for camera data
     private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading and displaying
-    private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
+    private Mat baseFrame;
+    int aspectWidth, aspectHeight;
 
     private int maxNumImages = 50; // The maximum number of pictures that will be taken
     private int delay = 2000; // Delay until camera starts in milliseconds
@@ -78,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onCreate(savedInstanceState);
         initDB();
         serverConnection = new ServerConnect(this);
-        changeView(new LoginView(this));
+        changeView(new MainView(this));
     }
 
     /**
@@ -112,6 +120,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * @param camera JavaCameraView to be activated
      */
     public void activateCamera(JavaCameraView camera) {
+        aspectWidth = 960;
+        aspectHeight = 720;
         cameraView = camera;
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
@@ -124,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         if (!clicked) {
             matList.clear();
             timer = new Timer();
-            timerTask = new Task(this);
+            timerTask = new Task(this, currentView);
             timerTask.resetCentered();
             timer.schedule(timerTask, delay, period);
             cameraView.enableView();
@@ -199,7 +209,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        baseFrame = inputFrame; // updates the system with each frame the android camera captures
+        baseFrame = inputFrame.rgba(); // updates the system with each frame the android camera captures
+
         if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken
         {
             timer.cancel(); // stops the timer
@@ -214,11 +225,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 }
             });
         }
-        if (matList.size() > 0) {
-            return matList.get(matList.size() - 1);
-        } else {
-            return baseScreen;
+
+        if(matList.size() > 0) {
+            baseScreen = matList.get(matList.size() - 1);
+
+            double scaleFactor = aspectHeight > aspectWidth ? aspectWidth/baseScreen.size().width : aspectHeight/baseScreen.size().height;
+            Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
+            Mat retImage = new Mat(baseScreen.rows(), baseScreen.cols(), baseScreen.type());
+            Core.copyMakeBorder(baseScreen, retImage, 0, 0, 120, 120, Core.BORDER_CONSTANT);
+            baseScreen = retImage;
+            System.out.println(retImage.size());
         }
+
+        return baseScreen;
     }
 
     /**
@@ -273,7 +292,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         matList.add(mat);
     }
 
-    public CameraBridgeViewBase.CvCameraViewFrame getBaseFrame() {
+    public JavaCameraView getCameraView() { return cameraView; }
+
+    public Mat getBaseFrame() {
         return baseFrame;
     }
 

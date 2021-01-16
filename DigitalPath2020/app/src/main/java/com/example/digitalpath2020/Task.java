@@ -26,7 +26,7 @@ public class Task extends TimerTask {
      * Constructor for the Task class
      * @param activity Instnace of the main activity
      */
-    public Task(MainActivity activity) {
+    public Task(MainActivity activity, BaseView uiCameraView) {
         this.activity = activity;
         mGRAY = new Mat();
         mBIN = new Mat();
@@ -38,15 +38,10 @@ public class Task extends TimerTask {
      */
     @Override
     public void run() {
-        activity.focus();
-
-        mRGBA = activity.getBaseFrame().rgba();
+        mRGBA = activity.getBaseFrame();
         mRGBAT = mRGBA.t();
         Core.flip(mRGBA.t(), mRGBAT, 1);
-        Imgproc.resize(mRGBAT, mRGBAT, mRGBA.size());
-
         removeBlackSpace();
-
         if(centered) activity.addMat(mRET);
     }
 
@@ -104,7 +99,7 @@ public class Task extends TimerTask {
             System.out.println(e);
         }
 
-        Imgproc.resize(mRET, mRET, mRGBA.size());
+        //Imgproc.resize(mRET, mRET, mRGBA.size());
     }
 
     public void resetCentered() {
