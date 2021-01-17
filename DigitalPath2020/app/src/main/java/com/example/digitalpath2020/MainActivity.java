@@ -40,11 +40,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Mat baseScreen; // Mat objects that will act as temporary storage for camera data
     private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading and displaying
     private Mat baseFrame;
-    int aspectWidth, aspectHeight;
+    private int aspectWidth, aspectHeight, prev = 0;
 
     private int maxNumImages = 50; // The maximum number of pictures that will be taken
     private int delay = 1000; // Delay until camera starts in milliseconds
-    private int period = 2000; // Period of time between each picture being taken
+    private int period = 2500; // Period of time between each picture being taken
     private Timer timer; // Timer that will control when each picture is being taken
     private Task timerTask; // Task to be executed that will take in and do rudimentary processing on images
     private boolean clicked = false; // Prevents a crash by stopping the button after it has been clicked once
@@ -226,23 +226,24 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             });
         }
 
-        if(matList.size() > 0) {
+        if(matList.size() > prev) {
+            prev++;
+
             baseScreen = matList.get(matList.size() - 1);
 
             double scaleFactor = aspectHeight > aspectWidth ? aspectWidth/baseScreen.size().width : aspectHeight/baseScreen.size().height;
             Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
-            Mat retImage = new Mat(baseScreen.rows(), baseScreen.cols(), baseScreen.type());
-
             int top = 0, bottom = 0, left = 0, right = 0;
             if(baseScreen.size().width < aspectWidth) {
                 left = (int)((aspectWidth - baseScreen.size().width)/2); right = left;
+                if(right + left + baseScreen.size().width != aspectWidth) right++;
             } else {
                 top = (int)((aspectHeight - baseScreen.size().height)/2); bottom = top;
+                if(top + bottom + baseScreen.size().height != aspectHeight) top++;
             }
 
-            Core.copyMakeBorder(baseScreen, retImage, top, bottom, left, right, Core.BORDER_CONSTANT);
-            baseScreen = retImage;
-            System.out.println(retImage.size());
+            Core.copyMakeBorder(baseScreen, baseScreen, top, bottom, left, right, Core.BORDER_CONSTANT);
+            System.out.println(baseScreen.size());
         }
 
         return baseScreen;
@@ -361,4 +362,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void setLoggedIn(boolean set) {
         loggedIn = set;
     }
+
+    public int getAspectWidth() { return aspectWidth; }
+
+    public int getAspectHeight() { return aspectHeight; }
 }

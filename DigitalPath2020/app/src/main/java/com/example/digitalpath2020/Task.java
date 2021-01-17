@@ -38,6 +38,7 @@ public class Task extends TimerTask {
      */
     @Override
     public void run() {
+        activity.focus();
         mRGBA = activity.getBaseFrame();
         mRGBAT = mRGBA.t();
         Core.flip(mRGBA.t(), mRGBAT, 1);
@@ -55,29 +56,31 @@ public class Task extends TimerTask {
             bottomFlag = false;
             rightFlag = false;
             stopRowTop = 0;
-            stopRowBottom = 720;
+            stopRowBottom = mRGBAT.rows();
             stopColLeft = 0;
-            stopColRight = 720;
+            stopColRight = mRGBAT.cols();
 
             Imgproc.cvtColor(mRGBAT, mGRAY, Imgproc.COLOR_BGR2GRAY);
 
-            Imgproc.threshold(mGRAY, mBIN, 30, 5, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(mGRAY, mBIN, 70, 5, Imgproc.THRESH_BINARY);
 
-            for(int i = 0; i < 720; i++) {
+            for(int i = 0; i < mRGBAT.rows(); i++) {
                 if(topFlag && Core.sumElems(mBIN.row(i)).val[0] > 50) {
                     stopRowTop = i;
                     topFlag = false;
                     bottomFlag = true;
-                } else if (bottomFlag && Core.sumElems(mBIN.row(i)).val[0]  < 10) {
+                } else if (bottomFlag && Core.sumElems(mBIN.row(i)).val[0] < 50) {
                     stopRowBottom = i;
                     bottomFlag = false;
                 }
+            }
 
+            for(int i = 0; i < mRGBAT.cols(); i++) {
                 if(leftFlag && Core.sumElems(mBIN.col(i)).val[0] > 50) {
                     stopColLeft = i;
                     leftFlag = false;
                     rightFlag = true;
-                } else if (rightFlag && Core.sumElems(mBIN.col(i)).val[0]  < 10) {
+                } else if (rightFlag && Core.sumElems(mBIN.col(i)).val[0] < 50) {
                     stopColRight = i;
                     rightFlag = false;
                 }
@@ -92,7 +95,7 @@ public class Task extends TimerTask {
         System.out.println("Divider: " + divider);
 
         try {
-            mRET = new Mat(mRGBAT, (new Rect(stopColLeft + divider, (720-stopRowBottom) + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider)));
+            mRET = mRGBAT.submat(new Rect(stopColLeft + divider, stopRowTop + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider));
             System.out.println("Correct centering");
         } catch (CvException e) {
             mRET = mRGBAT;

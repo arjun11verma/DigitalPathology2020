@@ -128,7 +128,7 @@ public class AfterCaptureView extends BaseView {
 
             activity.getServerConnection().makePost(object);
 
-            System.out.println("Images uploaded to server!");
+            System.out.println("Images sent to server!");
         }
     }
 
