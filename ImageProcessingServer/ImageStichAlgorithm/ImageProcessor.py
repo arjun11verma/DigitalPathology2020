@@ -6,19 +6,19 @@ import os
 def crop(img_arr, top, left, bottom, right):
     return img_arr[top:bottom, left:right]
 
-class removeBlackSpace:
+class ImageProcessor:
     """Image processing class for converting image formats, stitching images together, applying filters and removing black space from microscope images"""
-    num_images = 0
-    stopRowTop = 0
-    stopColLeft = 0
-    stopRowBottom = 0
-    stopColRight = 0
-    processed = False
-    divider = 0
-    inner_len = 0
     stitcher = cv2.Stitcher.create()
 
     def __init__(self):
+        self.num_images = 0
+        self.stopRowTop = 0
+        self.stopColLeft = 0
+        self.stopRowBottom = 0
+        self.stopColRight = 0
+        self.processed = False
+        self.divider = 0
+        self.inner_len = 0
         """Intializer for the class"""
         pass
 
@@ -39,10 +39,10 @@ class removeBlackSpace:
         else:
             slide_image = img_url
 
-        removeBlackSpace.num_images += 1
-        img_name = img_name + str(removeBlackSpace.num_images) + ".jpg"
+        self.num_images += 1
+        img_name = img_name + str(self.num_images) + ".jpg"
 
-        path = 'C:\VSCode Projects\DigitalPathology2020\DigitalPathWebsite\Backend\RecordedImages'
+        path = 'C:\VSCode Projects\DigitalPathology2020\ImageProcessingServer\RecordedImages'
         if(save_image): cv2.imwrite(os.path.join(path, img_name), slide_image)
 
         return slide_image
@@ -52,24 +52,28 @@ class removeBlackSpace:
         new_img = cv2.filter2D(slide_image, -1, kernel)
         return new_img
     
-    def sharpenImage(self, img_data):
+    def removeNoise(self, img_data):
+        pass
+    
+    def sharpenImage(self, img_data, factor, increase):
         """Applies a typical medical image processing sharpening kernel to the image"""
         kernel_data = []
 
         dim = 3
-        factor = 10
         for i in range(dim*dim):
             kernel_data.append(-1/factor)
 
-        kernel_data[int(dim*dim/2)] = (factor-1)/(factor)
+        kernel_data[int(dim*dim/2)] = (factor-1)/(factor) + increase
 
         sharpening_kernel = np.array(kernel_data).reshape((dim, dim))
+    
+        print(sharpening_kernel)
         
-        return cv2.filter2D(img_data, -1, sharpening_kernel)
+        return self.twoDimConvolution(img_data, sharpening_kernel)
 
     def stitchImages(self, slides):
         """Stitches together an array of images using the OpenCV Panorama stitcher"""
-        (status, result) = removeBlackSpace.stitcher.stitch(slides)
+        (status, result) = ImageProcessor.stitcher.stitch(slides)
 
         if(status == cv2.STITCHER_OK):
             return result
@@ -106,45 +110,45 @@ class removeBlackSpace:
 
         threshold, bin_img = cv2.threshold(bin_img, limit, 1, cv2.THRESH_BINARY)
 
-        if(not removeBlackSpace.processed):
-            removeBlackSpace.stopRowTop = 0
+        if(not self.processed):
+            self.stopRowTop = 0
             topFlag = True
-            removeBlackSpace.stopColLeft = 0
+            self.stopColLeft = 0
             leftFlag = True
-            removeBlackSpace.stopRowBottom = len(slide_image)
+            self.stopRowBottom = len(slide_image)
             bottomFlag = False
-            removeBlackSpace.stopColRight = len(slide_image[0])
+            self.stopColRight = len(slide_image[0])
             rightFlag = False
 
             for row in range(len(bin_img)):
                 if(topFlag and sum(bin_img[row]) > 50):
-                    removeBlackSpace.stopRowTop = row
+                    self.stopRowTop = row
                     topFlag = False
                     bottomFlag = True
                 elif(bottomFlag and sum(bin_img[row]) < 10):
-                    removeBlackSpace.stopRowBottom = row
+                    self.stopRowBottom = row
                     bottomFlag = False
 
                 if(leftFlag and sum(bin_img[:, row]) > 50):
-                    removeBlackSpace.stopColLeft = row
+                    self.stopColLeft = row
                     leftFlag = False
                     rightFlag = True
                 elif(rightFlag and sum(bin_img[:, row]) < 10):
-                    removeBlackSpace.stopColRight = row
+                    self.stopColRight = row
                     rightFlag = False
 
                 if(not(leftFlag or rightFlag or topFlag or bottomFlag)):
                     break
             
-            removeBlackSpace.inner_len = ((removeBlackSpace.stopColRight - removeBlackSpace.stopColLeft)*(1.4142))/2
-            divider = ((removeBlackSpace.stopRowBottom - removeBlackSpace.stopRowTop) - removeBlackSpace.inner_len)/2
-            removeBlackSpace.divider = int(divider)
+            self.inner_len = ((self.stopColRight - self.stopColLeft)*(1.4142))/2
+            divider = ((self.stopRowBottom - self.stopRowTop) - self.inner_len)/2
+            self.divider = int(divider)
 
-            removeBlackSpace.processed = True
+            self.processed = True
 
-        new_image = crop(slide_image, removeBlackSpace.stopRowTop, removeBlackSpace.stopColLeft,
-                            removeBlackSpace.stopRowBottom, removeBlackSpace.stopColRight)
+        new_image = crop(slide_image, self.stopRowTop, self.stopColLeft,
+                            self.stopRowBottom, self.stopColRight)
 
-        new_image = crop(new_image, removeBlackSpace.divider, removeBlackSpace.divider, removeBlackSpace.divider + int(removeBlackSpace.inner_len), removeBlackSpace.divider + int(removeBlackSpace.inner_len))
+        new_image = crop(new_image, self.divider, self.divider, self.divider + int(self.inner_len), self.divider + int(self.inner_len))
 
         return new_image

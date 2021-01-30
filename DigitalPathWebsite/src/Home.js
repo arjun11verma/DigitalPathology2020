@@ -7,7 +7,7 @@
 import React, { Component } from 'react';
 import { AppBar, Typography, Grid, Button } from '@material-ui/core';
 
-import { app, check, logoutCurrentUser } from './Database';
+import { app, check, logoutCurrentUser } from './Backend/Database';
 
 /**
  * Inner class representing a linked button

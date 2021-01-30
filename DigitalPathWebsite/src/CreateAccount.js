@@ -6,7 +6,7 @@
 
 import React, {Component} from 'react';
 import {Typography, Container, Paper, TextField, Button} from '@material-ui/core';
-import {create} from './Database';
+import {create} from './Backend/Database';
 
 class CreateAccount extends Component {
     /**

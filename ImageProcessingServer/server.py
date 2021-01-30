@@ -10,14 +10,14 @@ from flask_cors import CORS, cross_origin
 from flask_pymongo import PyMongo
 from flask_ngrok import run_with_ngrok
 
-from ImageStichAlgorithm.removeblackspace import removeBlackSpace
+from ImageStichAlgorithm.ImageProcessor import ImageProcessor
 from APIKEYS import MONGODB_KEY
-import imutils
-import cv2
-import numpy as np
 
-# Use Heroku to deploy this, or maybe Google Cloud or Google Cloud App Engine, or maybe Amazon EC2
-# Definitely use one of the latter, this project has funding, so use it!
+# Deliverables for CS side
+
+# Improve post processing (sharpening, brightness, various other kernels and whatnot)
+
+# Finalize slide image acquisition process (lots of potential to make it more efficient as well)
 
 app = Flask(__name__)
 
@@ -29,22 +29,21 @@ mongo = PyMongo(app, uri = mongoUri) # Connects my Flask server to my MongoDB da
 
 images = mongo.db.ImageSet
 
+imgproc = ImageProcessor()
+
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
    """Accepts Images in JSON format, stitches them together using OpenCV and uploads the stitched image to MongoDB. Returns the status of the processing/upload."""
-   imgproc = removeBlackSpace()
-
    post_data = (literal_eval(request.data.decode('utf8')))
 
    img_list = []
-   inner_list = []
    
    for i in range(len(post_data) - 4):
       img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], True))
 
    slide_image = imgproc.stitchImages(img_list)
 
-   slide_image = slide_image + imgproc.sharpenImage(slide_image)
+   slide_image = imgproc.sharpenImage(slide_image, 9, 1.3)
 
    imgproc.displayImage(slide_image)
 
@@ -57,9 +56,7 @@ def acceptImages():
    time_stamp = (datetime.now()).strftime("%m/%d/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
-   print(len(slide_image))
-
-   if(len(slide_image) >= 500):
+   if(len(slide_image) >= 1000):
       mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
       print(images.insert_one(mongo_document).inserted_id)
       return {'response': "Data posted successfully!"}

@@ -10,6 +10,7 @@ package com.example.digitalpath2020;
 import android.content.Context;
 import android.view.View;
 
+import org.opencv.android.JavaCamera2View;
 import org.opencv.android.JavaCameraView;
 
 import java.util.Timer;

@@ -9,11 +9,11 @@ import Zoom from 'react-medium-image-zoom'
 import 'react-medium-image-zoom/dist/styles.css'
 import { Paper, Grid, Typography, AppBar, TextareaAutosize, Button } from '@material-ui/core';
 
-import { apolloClient } from './ApolloClient';
+import { apolloClient } from './Backend/ApolloClient';
 import gql from 'graphql-tag';
 import axios from 'axios';
 import {server_url} from 'axios';
-import { check } from './Database';
+import { check } from './Backend/Database';
 
 /**
  * Inner class for displaying the image
@@ -36,8 +36,8 @@ class ImageViewCard extends Component {
     render() {
         return (
             <div>
-                <Zoom>
-                    <img alt="Slide" src={this.props.src} style={{ width: "50vw" }} />
+                <Zoom style = {{height: 600}}>
+                    <img alt="Slide" src={this.props.src} style={{ width: "50vw", height: 600}} />
                 </Zoom>
             </div>
         );

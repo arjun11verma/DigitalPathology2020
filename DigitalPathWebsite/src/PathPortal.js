@@ -8,8 +8,8 @@
 import React, { Component } from 'react';
 import { Paper, Typography, Grid, AppBar, CardActionArea } from '@material-ui/core';
 
-import { apolloClient } from './ApolloClient'
-import { check } from './Database';
+import { apolloClient } from './Backend/ApolloClient'
+import { check } from './Backend/Database';
 import gql from "graphql-tag";
 
 /**

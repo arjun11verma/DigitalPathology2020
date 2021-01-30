@@ -19,7 +19,7 @@ import org.json.JSONObject;
 
 public class ServerConnect {
     private RequestQueue queue; // Volley request queue
-    private String serverUrl = "http://fbb19edb59c0.ngrok.io"; // Server url
+    private String serverUrl = "https://4e37889d052e.ngrok.io"; // Server url
     private MainActivity activity; // Instance of the main activity
     private boolean done = false; // Boolean representing whether the call was made
     private boolean success = true; // Boolean representing whether the call was a success

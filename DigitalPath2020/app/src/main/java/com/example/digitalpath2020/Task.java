@@ -38,12 +38,11 @@ public class Task extends TimerTask {
      */
     @Override
     public void run() {
-        activity.focus();
-        mRGBA = activity.getBaseFrame();
+        mRGBA = activity.getBaseFrame().rgba();
         mRGBAT = mRGBA.t();
         Core.flip(mRGBA.t(), mRGBAT, 1);
         removeBlackSpace();
-        if(centered) activity.addMat(mRET);
+        if(true) activity.addMat(mRET);
     }
 
     /**
@@ -62,7 +61,7 @@ public class Task extends TimerTask {
 
             Imgproc.cvtColor(mRGBAT, mGRAY, Imgproc.COLOR_BGR2GRAY);
 
-            Imgproc.threshold(mGRAY, mBIN, 70, 5, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(mGRAY, mBIN, 50, 5, Imgproc.THRESH_BINARY);
 
             for(int i = 0; i < mRGBAT.rows(); i++) {
                 if(topFlag && Core.sumElems(mBIN.row(i)).val[0] > 50) {
@@ -101,8 +100,6 @@ public class Task extends TimerTask {
             mRET = mRGBAT;
             System.out.println(e);
         }
-
-        //Imgproc.resize(mRET, mRET, mRGBA.size());
     }
 
     public void resetCentered() {

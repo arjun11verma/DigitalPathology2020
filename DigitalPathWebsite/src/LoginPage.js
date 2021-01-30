@@ -6,7 +6,7 @@
 
 import React, { Component } from 'react';
 import {Grid, Typography, Container, Paper, TextField, Button, Link} from '@material-ui/core';
-import {logIn} from './Database';
+import {logIn} from './Backend/Database';
 
 class LoginPage extends Component {
     /**
