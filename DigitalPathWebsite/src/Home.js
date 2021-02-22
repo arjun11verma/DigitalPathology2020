@@ -101,6 +101,7 @@ class Home extends Component {
                     </AppBar>
 
                     <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10 }}>{this.state.welcomeText}</Typography>
+                    <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10 }}>This website currently exists for purely research purposes. In no way shape or form should it be used to provide actual cancer diagnoses.</Typography>
                 </div>
             </div>
         );

@@ -20,7 +20,9 @@ class ImageProcessor:
         self.divider = 0
         self.inner_len = 0
         """Intializer for the class"""
-        pass
+
+    def combineImages(self, image_list):
+        return np.concatenate(image_list, axis=0)
 
     def displayImage(self, img_url):
         """Displays an image from either a filepath or an Numpy array"""
@@ -42,7 +44,7 @@ class ImageProcessor:
         self.num_images += 1
         img_name = img_name + str(self.num_images) + ".jpg"
 
-        path = 'C:\VSCode Projects\DigitalPathology2020\ImageProcessingServer\RecordedImages'
+        path = 'C:\VSCode Projects\DigitalPathology\ImageProcessingServer\RecordedImages'
         if(save_image): cv2.imwrite(os.path.join(path, img_name), slide_image)
 
         return slide_image
@@ -58,6 +60,7 @@ class ImageProcessor:
     def sharpenImage(self, img_data, factor, increase):
         """Applies a typical medical image processing sharpening kernel to the image"""
         kernel_data = []
+        factor = 1/factor
 
         dim = 3
         for i in range(dim*dim):

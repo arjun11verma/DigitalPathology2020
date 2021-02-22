@@ -63,7 +63,7 @@ public class ConfirmCameraView extends BaseView {
                     isValid = false;
                 }
                 if (patient.isEmpty()) {
-                    patientName.setError("Please enter a valid patient name"); // checks if the patient name is valid
+                    patientName.setError("Please enter a valid slide ID"); // checks if the patient name is valid
                     isValid = false;
                 }
 

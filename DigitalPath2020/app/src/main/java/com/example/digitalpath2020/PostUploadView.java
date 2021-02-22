@@ -7,7 +7,12 @@
 package com.example.digitalpath2020;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
+import android.util.Base64;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class PostUploadView extends BaseView {
@@ -19,12 +24,18 @@ public class PostUploadView extends BaseView {
      * @param context Instance of the main activity class
      * @param status String representing the success of the upload
      */
-    public PostUploadView(Context context, String status) {
+    public PostUploadView(Context context, String status, String stitchedImage) {
         super(context);
 
         checkLoggedIn();
 
         activity.setContentView(R.layout.post_upload_activity);
+
+        ImageView imageStitch = activity.findViewById(R.id.stitchedImage);
+        byte[] decodedImage = Base64.decode(stitchedImage, Base64.DEFAULT);
+        Bitmap slideImageDecoded = BitmapFactory.decodeByteArray(decodedImage, 0, decodedImage.length);
+        imageStitch.setImageBitmap(Bitmap.createScaledBitmap(slideImageDecoded, 1000, 1000, false));
+
         ((TextView)(activity.findViewById(R.id.postTitle))).setText(status);
 
         activity.findViewById(R.id.logoutBtn).setOnClickListener(new OnClickListener() {

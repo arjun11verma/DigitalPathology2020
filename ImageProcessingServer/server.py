@@ -36,19 +36,12 @@ def acceptImages():
    """Accepts Images in JSON format, stitches them together using OpenCV and uploads the stitched image to MongoDB. Returns the status of the processing/upload."""
    post_data = (literal_eval(request.data.decode('utf8')))
 
-   img_list = []
-   
-   for i in range(len(post_data) - 4):
-      img_list.append(imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], True))
+   img_list = [imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], False) for i in range(len(post_data) - 4)]
 
    slide_image = imgproc.stitchImages(img_list)
 
-   slide_image = imgproc.sharpenImage(slide_image, 9, 1.3)
-
-   imgproc.displayImage(slide_image)
-
-   print("Regular stitching over!")
-
+   slide_image = imgproc.sharpenImage(slide_image, 0.5, 4.7)
+   
    username = post_data['username']
    name = post_data['name']
    slide_type = post_data['slide']
@@ -56,12 +49,16 @@ def acceptImages():
    time_stamp = (datetime.now()).strftime("%m/%d/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
-   if(len(slide_image) >= 1000):
-      mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
-      print(images.insert_one(mongo_document).inserted_id)
-      return {'response': "Data posted successfully!"}
-   
-   return {'response': "Data not posted right. You're gonna have to try again!"}
+   #previous_image_set = images.find_one_or_404({'username': username, 'cancer': cancer_type, 'slide': slide_type})
+
+   #if (previous_image_set):
+   #   pass
+   #else:
+   imgproc.removeBlackSpace(slide_image, 'slide_image_data', False)
+   mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
+   print(images.insert_one(mongo_document).inserted_id)
+
+   return {'response': "Data posted successfully!", 'imageData': stitched_image}
 
 @app.route('/displayImages', methods = ['POST'])
 def displayImages():

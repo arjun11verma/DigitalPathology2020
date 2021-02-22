@@ -38,9 +38,10 @@ const emailTransport = gmailAPI.createTransport(smtpTransport({
 app.post('/api/updateCurrentDiagnosis', (req, res) => {
     var currentUser = false;
 
+    console.log(`Fired for patient: ${req.body.patientID}`);
+
     if (currentDiagnoses.has(req.body.patientID)) {
         if (req.body.doctorID !== currentDiagnoses.get(req.body.patientID).doctorID) currentUser = true;
-        console.log(currentDiagnoses);
     }
     else currentDiagnoses.set(req.body.patientID, { 'doctorID': req.body.doctorID, 'currentDiagnosis': "Please input your diagnosis here" });
 

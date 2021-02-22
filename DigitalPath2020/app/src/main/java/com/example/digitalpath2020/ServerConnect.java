@@ -19,7 +19,7 @@ import org.json.JSONObject;
 
 public class ServerConnect {
     private RequestQueue queue; // Volley request queue
-    private String serverUrl = "https://4e37889d052e.ngrok.io"; // Server url
+    private String serverUrl = "http://0dfc7d228f66.ngrok.io"; // Server url
     private MainActivity activity; // Instance of the main activity
     private boolean done = false; // Boolean representing whether the call was made
     private boolean success = true; // Boolean representing whether the call was a success
@@ -48,9 +48,9 @@ public class ServerConnect {
                 public void onResponse(JSONObject response) {
                     try {
                         if((response.get("response")).equals("Data not posted right. You're gonna have to try again!")) {
-                            activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again."));
+                            activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again.", (String) response.get("imageData")));
                         } else {
-                            activity.changeView(new PostUploadView(activity, "Your upload was successful!"));
+                            activity.changeView(new PostUploadView(activity, "Your upload was successful!", null));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -60,7 +60,7 @@ public class ServerConnect {
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again."));
+                    activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again.", null));
                     success = false;
                     System.out.println(error);
                 }

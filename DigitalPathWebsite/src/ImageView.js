@@ -12,7 +12,7 @@ import { Paper, Grid, Typography, AppBar, TextareaAutosize, Button } from '@mate
 import { apolloClient } from './Backend/ApolloClient';
 import gql from 'graphql-tag';
 import axios from 'axios';
-import {server_url} from 'axios';
+import {server_url} from './APIKEYS.js';
 import { check } from './Backend/Database';
 
 /**
@@ -67,10 +67,10 @@ class ImageView extends Component {
                     id='diagnosis'
                     style={{ width: 720, height: 300, marginLeft: 10, fontFamily: "Times New Roman" }}
                 ></TextareaAutosize>
-                <Button onClick={this.sendDiagnosis} style={{ fontFamily: "Garamond", marginLeft: 10 }}>Send Diagnosis!</Button>
-                <Button onClick={this.saveData} style={{ fontFamily: "Garamond", marginLeft: 10 }}>Save your diagnosis without sending!</Button>
+                <Button onClick={this.sendDiagnosis} style={{ fontFamily: "Garamond", marginLeft: 10 }}>Send Comments!</Button>
+                <Button onClick={this.saveData} style={{ fontFamily: "Garamond", marginLeft: 10 }}>Save your comments without sending!</Button>
             </div>,
-            diagnosisMessage: "Thank you so much for volunteering to aid the global pathology effort. Please determine a cancer diagnosis from the provided slide image and input the diagnosis below. Once you have successfully completed the diagnosis, please either click Send Diagnosis to send your diagnosis to the patient and make it visible to other doctors."
+            diagnosisMessage: "Thank you so much for volunteering to aid the global pathology effort. Please provide comments on the cancer status of the provided slide image and input them below. Once you have successfully completed your comments, please either click Send Comments to send your comments to the patient and make it visible to other doctors or click Save without Sending to save it so only you can view it."
         };
     }
 
@@ -101,15 +101,15 @@ class ImageView extends Component {
             if (diagnosis !== "N") {
                 this.setState({
                     determineDiagnosis: <Typography style={{ marginLeft: 10, fontFamily: "Garamond" }}>{("Former Diagnosis: " + diagnosis)}</Typography>,
-                    diagnosisMessage: "This patient has already recieved a diagnosis. It can be viewed below."
+                    diagnosisMessage: "This patient has already recieved comments from a pathologist. They can be viewed below."
                 });
             } else {
-                axios.post(server_url + 'updateCurrentDiagnosis', { 'patientID': this.state.objectId[this.state.objectId.length - 1], 'doctorID': this.state.objectId[this.state.objectId.length - 3] }).then((res) => {
+                axios.post(`${server_url}updateCurrentDiagnosis`, { 'patientID': url_list[url_list.length - 1], 'doctorID': url_list[url_list.length - 3] }).then((res) => {
                     console.log(res);
                     if (res.data.using) {
                         this.setState({
-                            determineDiagnosis: <Typography style={{ marginLeft: 10, fontFamily: "Garamond" }}>{("Another doctor is currently working on diagnosing this patient.")}</Typography>,
-                            diagnosisMessage: "This patient is currently being diagnosed by another pathologist."
+                            determineDiagnosis: <Typography style={{ marginLeft: 10, fontFamily: "Garamond" }}>{("Another doctor is currently working on this patient.")}</Typography>,
+                            diagnosisMessage: "This patient is currently being looked at by another pathologist."
                         });
                     } else {
                         console.log(res.data.currentDiagnosis);
@@ -136,7 +136,7 @@ class ImageView extends Component {
     sendDiagnosis = () => {
         const diagnosis = document.getElementById('diagnosis').value;
 
-        axios.post(server_url + 'sendEmail', { 'address': "arjunverma1com@gmail.com", 'name': this.state.nameUser, 'message': diagnosis }).then((res) => {
+        axios.post(`${server_url}sendEmail`, { 'address': "arjunverma1com@gmail.com", 'name': this.state.nameUser, 'message': diagnosis }).then((res) => {
             if (res.status === 200) {
                 apolloClient.mutate({
                     mutation: gql`
@@ -169,7 +169,7 @@ class ImageView extends Component {
      * Saves the temporary diagnosis of a doctor
      */
     saveData = async() => {
-        axios.post(server_url + 'saveCurrentDiagnosis', { 'patientID': this.state.objectId, 'currentDiagnosis': document.getElementById('diagnosis').value }).then((res) => {
+        axios.post(`${server_url}saveCurrentDiagnosis`, { 'patientID': this.state.objectId, 'currentDiagnosis': document.getElementById('diagnosis').value }).then((res) => {
             window.location.href = '/';
         });
     }

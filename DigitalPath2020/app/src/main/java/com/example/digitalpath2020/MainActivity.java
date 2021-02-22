@@ -236,8 +236,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
             baseScreen = matList.get(matList.size() - 1).clone();
 
-            double scaleFactor = aspectHeight > aspectWidth ? aspectWidth/baseScreen.size().width : aspectHeight/baseScreen.size().height;
+            System.out.println("Width: " + aspectWidth);
+            System.out.println("Height: " + aspectHeight);
+
+            double scaleFactor = Math.min(aspectWidth/baseScreen.size().width, aspectHeight/baseScreen.size().height);
             Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
+
+            System.out.println(baseScreen.size());
 
             int top = 0, bottom = 0, left = 0, right = 0;
             if(baseScreen.size().width < aspectWidth) {
