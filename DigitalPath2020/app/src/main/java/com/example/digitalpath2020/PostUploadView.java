@@ -31,10 +31,12 @@ public class PostUploadView extends BaseView {
 
         activity.setContentView(R.layout.post_upload_activity);
 
-        ImageView imageStitch = activity.findViewById(R.id.stitchedImage);
-        byte[] decodedImage = Base64.decode(stitchedImage, Base64.DEFAULT);
-        Bitmap slideImageDecoded = BitmapFactory.decodeByteArray(decodedImage, 0, decodedImage.length);
-        imageStitch.setImageBitmap(Bitmap.createScaledBitmap(slideImageDecoded, 1000, 1000, false));
+        if (stitchedImage != null) {
+            ImageView imageStitch = activity.findViewById(R.id.stitchedImage);
+            byte[] decodedImage = Base64.decode(stitchedImage, Base64.DEFAULT);
+            Bitmap slideImageDecoded = BitmapFactory.decodeByteArray(decodedImage, 0, decodedImage.length);
+            imageStitch.setImageBitmap(Bitmap.createScaledBitmap(slideImageDecoded, 1000, 1000, false));
+        }
 
         ((TextView)(activity.findViewById(R.id.postTitle))).setText(status);
 
