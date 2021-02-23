@@ -160,6 +160,6 @@ public class AfterCaptureView extends BaseView {
         });
         mongoRealm.close();
 
-        activity.changeView(new PostUploadView(activity, "Deprecated"));
+        activity.changeView(new PostUploadView(activity, "Deprecated", "Deprecated"));
     }
 }

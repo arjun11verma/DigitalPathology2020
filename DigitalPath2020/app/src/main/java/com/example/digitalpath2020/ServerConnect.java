@@ -19,7 +19,7 @@ import org.json.JSONObject;
 
 public class ServerConnect {
     private RequestQueue queue; // Volley request queue
-    private String serverUrl = "http://0dfc7d228f66.ngrok.io"; // Server url
+    private String serverUrl = "http://f93dbd2048d4.ngrok.io"; // Server url
     private MainActivity activity; // Instance of the main activity
     private boolean done = false; // Boolean representing whether the call was made
     private boolean success = true; // Boolean representing whether the call was a success
@@ -47,15 +47,16 @@ public class ServerConnect {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
-                        if((response.get("response")).equals("Data not posted right. You're gonna have to try again!")) {
-                            activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again.", (String) response.get("imageData")));
+                        String stitchedData =  (String) response.get("imageData");
+
+                        if((response.get("response")).equals("N")) {
+                            activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again.", null));
                         } else {
-                            activity.changeView(new PostUploadView(activity, "Your upload was successful!", null));
+                            activity.changeView(new PostUploadView(activity, "Your upload was successful!", stitchedData));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    System.out.println(response);
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -69,10 +70,45 @@ public class ServerConnect {
             request.setRetryPolicy(new DefaultRetryPolicy(600000,
                     0,
                     DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
             queue.add(request);
             done = true;
         }
+    }
+
+    public void sendUpload() {
+        String postUrl = serverUrl + "/uploadImage";
+
+        JSONObject postObject = new JSONObject();
+        try {
+            postObject.put("name", activity.getName());
+        } catch (JSONException e) {
+            System.out.println("Failed Put");
+        }
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    if (((String)response.get("response")).equals("Y")) {
+                        System.out.println("Uploaded!");
+                    } else {
+                        System.out.println("Failed!");
+                    }
+                } catch (JSONException e) {
+                    System.out.println(e);
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println(error);
+            }
+        });
+
+        request.setRetryPolicy(new DefaultRetryPolicy(600000,
+                0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(request);
     }
 
     // Getters and setters for the fields

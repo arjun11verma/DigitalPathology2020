@@ -31,10 +31,31 @@ images = mongo.db.ImageSet
 
 imgproc = ImageProcessor()
 
+held_images = {}
+
+@app.route('/uploadImage', methods = ['POST'])
+def uploadImage():
+   post_data = (literal_eval(request.data.decode('utf8')))
+   slide_id = post_data['name']
+
+   previous_image_set = images.find_one_or_404({'username': slide_id})
+
+   if previous_image_set:
+      mongo_id = None
+   else: 
+      mongo_id = images.insert_one(held_images[slide_id])
+   
+   print(mongo_id)
+
+   if mongo_id: return {'response': "Y"} 
+   return {'response': "N"}
+
 @app.route('/acceptImages', methods = ['POST'])
 def acceptImages():
    """Accepts Images in JSON format, stitches them together using OpenCV and uploads the stitched image to MongoDB. Returns the status of the processing/upload."""
    post_data = (literal_eval(request.data.decode('utf8')))
+
+   if post_data['name'] in held_images: held_images.pop(post_data['name'])
 
    img_list = [imgproc.removeBlackSpace(imgproc.base64ToArray(post_data[str(i)]), post_data['name'], False) for i in range(len(post_data) - 4)]
 
@@ -49,16 +70,11 @@ def acceptImages():
    time_stamp = (datetime.now()).strftime("%m/%d/%Y %H:%M:%S")
    stitched_image = imgproc.arrayToBase64(slide_image)
 
-   #previous_image_set = images.find_one_or_404({'username': username, 'cancer': cancer_type, 'slide': slide_type})
-
-   #if (previous_image_set):
-   #   pass
-   #else:
    imgproc.removeBlackSpace(slide_image, 'slide_image_data', False)
    mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
-   print(images.insert_one(mongo_document).inserted_id)
+   held_images[name] = mongo_document
 
-   return {'response': "Data posted successfully!", 'imageData': stitched_image}
+   return {'response': "Y", 'imageData': stitched_image}
 
 @app.route('/displayImages', methods = ['POST'])
 def displayImages():

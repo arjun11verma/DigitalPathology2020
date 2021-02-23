@@ -33,9 +33,7 @@ images = mongo.db.ImageSet
 
 imgproc = ImageProcessor()
 
-data = images.find({'name': '12345'})
-
-print("Found!")
+data = images.find({'username': 'arjun@gmail.com'})
 
 data = [(imgproc.base64ToArray(image['image'])) for image in data]
 
