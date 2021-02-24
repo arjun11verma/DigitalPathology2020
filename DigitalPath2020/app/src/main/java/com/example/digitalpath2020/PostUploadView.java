@@ -15,6 +15,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class PostUploadView extends BaseView {
     /**
      * Constructor for the PostUploadView class
@@ -43,7 +46,14 @@ public class PostUploadView extends BaseView {
         activity.findViewById(R.id.uploadImages).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.getServerConnection().sendUpload();
+                JSONObject postObject = new JSONObject();
+                try {
+                    postObject.put("name", activity.getName());
+                } catch (JSONException e) {
+                    System.out.println("Failed Put");
+                }
+
+                activity.getServerConnection().sendUpload(postObject);
             }
         });
 

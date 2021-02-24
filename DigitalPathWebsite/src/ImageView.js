@@ -198,7 +198,7 @@ class ImageView extends Component {
                             <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncologic Diagnosis </Typography>
                         </Grid>
                         <Grid item alignItems="center" style={{ marginLeft: "auto" }}>
-                            <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey", margin: 10 }}>Slide Image Diagnosis</Typography>
+                            <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey", margin: 10 }}>Slide Image Viewing</Typography>
                         </Grid>
                     </Grid>
                 </AppBar>

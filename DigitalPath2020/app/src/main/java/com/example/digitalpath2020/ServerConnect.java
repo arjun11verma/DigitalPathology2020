@@ -75,28 +75,23 @@ public class ServerConnect {
         }
     }
 
-    public void sendUpload() {
+    public void sendUpload(JSONObject postObject) {
         String postUrl = serverUrl + "/uploadImage";
-
-        JSONObject postObject = new JSONObject();
-        try {
-            postObject.put("name", activity.getName());
-        } catch (JSONException e) {
-            System.out.println("Failed Put");
-        }
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                String returnString = "unsuccessfully";
                 try {
                     if (((String)response.get("response")).equals("Y")) {
-                        System.out.println("Uploaded!");
-                    } else {
-                        System.out.println("Failed!");
+                        System.out.println("Uploaded Successfully!");
+                        returnString = "successfully";
                     }
                 } catch (JSONException e) {
                     System.out.println(e);
                 }
+
+                activity.changeView(new FinalUploadView(activity, "Your image was uploaded " + returnString + "! You can either logout or choose to take more slide images"));
             }
         }, new Response.ErrorListener() {
             @Override
