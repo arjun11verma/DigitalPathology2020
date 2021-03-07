@@ -17,7 +17,6 @@ import com.example.digitalpath2020.R;
 import io.realm.mongodb.App;
 
 public class CreateAccountView extends BaseView implements FormFillable {
-    private boolean isValid = true; // Boolean determining whether account information is valid or not
     private EditText usernameText; // Text input for username
     private EditText passwordText; // Text input for password
 

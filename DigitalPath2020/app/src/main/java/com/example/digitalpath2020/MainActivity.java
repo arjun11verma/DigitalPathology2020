@@ -164,10 +164,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * Stops the camera and switches the view to the post capture page
      */
     public void stopCamera() {
-        timer.cancel(); // stops the timer
-        timer.purge(); // makes the timertask stop occuring
-        cameraView.disconnectCamera();
-        cameraView.disableView();
+        if (clicked) {
+            timer.cancel();
+            timer.purge();
+            cameraView.disconnectCamera();
+            cameraView.disableView();
+        }
 
         runOnUiThread(new Runnable() {
             @Override

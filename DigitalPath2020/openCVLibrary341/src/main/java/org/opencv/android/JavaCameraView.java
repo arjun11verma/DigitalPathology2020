@@ -276,7 +276,6 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         /* 1. We need to stop thread which updating the frames
          * 2. Stop camera and release it
          */
-
         stopCamera = false;
 
         Log.d(TAG, "Disconnecting from camera");

@@ -19,7 +19,6 @@ import io.realm.mongodb.User;
 
 public class LoginView extends BaseView implements FormFillable {
     private Credentials connectCred; // Login credentials
-    private boolean isValid = true; // Boolean determining whether login information is valid or not
     private EditText usernameText; // Text input for username
     private EditText passwordText; // Text input for password
 

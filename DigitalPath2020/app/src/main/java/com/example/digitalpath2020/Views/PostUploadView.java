@@ -59,7 +59,7 @@ public class PostUploadView extends BaseView {
         JSONObject postObject = new JSONObject();
 
         try {
-            postObject.put("name", activity.getName());
+            postObject.put("name", activity.getCurrentUser().getName());
         } catch (JSONException e) {
             System.out.println(e);
         }
