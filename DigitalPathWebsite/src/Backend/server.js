@@ -25,8 +25,8 @@ const emailTransport = gmailAPI.createTransport(smtpTransport({
     service: 'gmail',
     host: 'smtp.gmail.com',
     auth: {
-        user: "digitalpathology2020@gmail.com",
-        pass: "Timeline123#"
+        user: "arjunverma1com@gmail.com",
+        pass: "08/19/2002"
     }
 }));
 

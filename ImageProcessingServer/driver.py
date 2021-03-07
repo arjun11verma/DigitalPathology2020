@@ -33,7 +33,7 @@ images = mongo.db.ImageSet
 
 imgproc = ImageProcessor()
 
-data = images.find({'username': 'arjun@gmail.com'})
+data = images.find({'name': '12345'})
 
 data = [(imgproc.base64ToArray(image['image'])) for image in data]
 
@@ -70,26 +70,6 @@ print("Processed!")
 final_image = final_image[:lower_bound]
 
 imgproc.displayImage(final_image)
-
-
-"""
-images = []
-
-name = 'William'
-
-base_file_name = './RecordedImages/'
-
-for i in range(1, 31):
-    images.append(imgproc.removeBlackSpace(f'{base_file_name}{name}{i}.jpg', 'slide_image', False))
-
-stitch_one = (imgproc.stitchImages(images))
-
-imgproc.displayImage(stitch_one)
-
-stitch_two = imgproc.removeBlackSpace(stitch_one, 'H&E Partial Stitch', True)
-"""
-
-
 
 
 

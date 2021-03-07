@@ -61,7 +61,7 @@ class ImageView extends Component {
             emailUser: null,
             nameUser: null,
             determineDiagnosis: <div>
-                <Typography variant="body1" style={{ fontFamily: "Garamond", marginLeft: 10 }}>Please input your diagnosis below. You and the patient will both remain anonymous. </Typography>
+                <Typography variant="body1" style={{ fontFamily: "Garamond", marginLeft: 10 }}>Please input your comments below. You and the patient will both remain anonymous. </Typography>
                 <TextareaAutosize
                     variant="outlined"
                     id='diagnosis'
@@ -195,7 +195,7 @@ class ImageView extends Component {
                     <Grid container alignItems="center" direction="row">
                         <Grid item style={{ padding: "10px" }}>
                             <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey" }}> Digital Pathology </Typography>
-                            <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncologic Diagnosis </Typography>
+                            <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncology </Typography>
                         </Grid>
                         <Grid item alignItems="center" style={{ marginLeft: "auto" }}>
                             <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey", margin: 10 }}>Slide Image Viewing</Typography>

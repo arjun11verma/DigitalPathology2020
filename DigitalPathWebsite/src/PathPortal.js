@@ -36,7 +36,7 @@ class SlideView extends Component {
                             <Typography variant="body1" style={{ fontFamily: "Garamond", margin: 5 }}>Slide Type: {this.props.slide} </Typography>
                             <Typography variant="body1" style={{ fontFamily: "Garamond", margin: 5 }}>Cancer Type: {this.props.cancer} </Typography>
                             <Typography variant="body1" style={{ fontFamily: "Garamond", margin: 5 }}>Date Recorded: {this.props.date} </Typography>
-                            <Typography variant="body1" style={{ fontFamily: "Garamond", margin: 5 }}>Diagnosis recieved: {this.props.diagnosis} </Typography>
+                            <Typography variant="body1" style={{ fontFamily: "Garamond", margin: 5 }}>Comments recieved: {this.props.diagnosis} </Typography>
                         </Grid>
                     </CardActionArea>
                 </Paper>
@@ -166,7 +166,7 @@ class PathPortal extends Component {
                     <Grid container alignItems="center" direction="row">
                         <Grid item style={{ padding: "10px" }}>
                             <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey" }}> Digital Pathology </Typography>
-                            <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncologic Diagnosis </Typography>
+                            <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncology </Typography>
                         </Grid>
                         <Grid item alignItems="center" style={{ marginLeft: "auto" }}>
                             <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey", margin: 10 }}>Pathology Portal</Typography>
@@ -189,11 +189,11 @@ class PathPortal extends Component {
 
                     <Grid xs={6}>
                         <Paper style={{ height: "42vh", overflowY: "scroll" }}>
-                            <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10, position: "static" }}>Undiagnosed Slides</Typography>
+                            <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10, position: "static" }}>Uncommented Slides</Typography>
                             {this.state.undiagnosedSlides}
                         </Paper>
                         <Paper style={{ height: "42vh", overflowY: "scroll" }}>
-                            <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10, position: "static" }}>Diagnosed Slides</Typography>
+                            <Typography variant="h5" style={{ fontFamily: "Garamond", margin: 10, position: "static" }}>Commented Slides</Typography>
                             {this.state.diagnosedSlides}
                         </Paper>
                     </Grid>

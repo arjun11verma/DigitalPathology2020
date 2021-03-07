@@ -58,7 +58,7 @@ class Home extends Component {
         this.state = {
             email: document.location.href.split('/'),
             length: document.location.href.split('/').length - 1,
-            welcomeText: "Welcome to Digital Pathology, a website for expanding global access to pathological diagnosis through modern technology. Please log in."
+            welcomeText: "Welcome to Digital Pathology, a website for expanding global access to pathologogy through modern technology. Please log in."
         };
     }
 
@@ -91,7 +91,7 @@ class Home extends Component {
                         <Grid container alignItems="center" direction="row">
                             <Grid item style={{ padding: "10px" }}>
                                 <Typography variant="h3" style={{ fontFamily: "Garamond", color: "grey" }}> Digital Pathology </Typography>
-                                <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncologic Diagnosis </Typography>
+                                <Typography variant="h6" style={{ fontFamily: "Garamond", color: "grey" }}> Expanding Oncology </Typography>
                             </Grid>
                             <CleanButton text="Pathology Portal" link={"./" + this.state.email[this.state.length] + "/PathPortal"} />
                             <CleanButton text="Login" link="./Login" />
