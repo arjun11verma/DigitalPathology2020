@@ -4,10 +4,13 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Views;
 
 import android.content.Context;
 import android.view.View;
+
+import com.example.digitalpath2020.MainActivity;
+import com.example.digitalpath2020.R;
 
 import io.realm.mongodb.App;
 
@@ -19,9 +22,10 @@ public abstract class BaseView extends View {
      * Constructor for the base view class
      * @param context Instance of the main activity
      */
-    public BaseView(Context context) {
+    public BaseView(Context context, int layout) {
         super(context);
         activity = (MainActivity)context;
+        activity.setContentView(layout);
         app = activity.getApp();
     }
 
@@ -30,7 +34,7 @@ public abstract class BaseView extends View {
      */
     public void checkLoggedIn() {
         if(!activity.isLoggedIn()) {
-            activity.changeView(new LoginView(activity));
+            activity.changeView(new LoginView(activity, R.layout.login_activity));
         }
     }
 }

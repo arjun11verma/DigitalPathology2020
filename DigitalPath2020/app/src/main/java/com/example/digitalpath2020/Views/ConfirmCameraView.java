@@ -5,7 +5,7 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Views;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -15,11 +15,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class ConfirmCameraView extends BaseView {
+import com.example.digitalpath2020.R;
+
+public class ConfirmCameraView extends BaseView implements FormFillable {
     private EditText slideName; // Name of the type of slide being used
     private EditText cancerName; // Name of the type of cancer
     private EditText patientName; // Name of the patient
-    private boolean isValid = true; // Boolean determining whether input is valid
 
     /**
      * Constructor for the ConfirmCameraView class
@@ -27,16 +28,14 @@ public class ConfirmCameraView extends BaseView {
      * Sets the preview camera button to the testCamera method, and sets the startCameraPage button to a method that determines whether the user input is valid and correctly redirects the user
      * @param context Instance of the main activity class
      */
-    public ConfirmCameraView(Context context) {
-        super(context);
-
-        activity.setContentView(R.layout.confirm_camera_activity);
+    public ConfirmCameraView(Context context, int layout) {
+        super(context, layout);
 
         slideName = activity.findViewById(R.id.slideType);
         cancerName = activity.findViewById(R.id.cancerType);
         patientName = activity.findViewById(R.id.patientName);
 
-        ((TextView) (activity.findViewById(R.id.setupTitle))).setText("Welcome " + (activity.getUsername().split("@"))[0] + "!");
+        ((TextView) (activity.findViewById(R.id.setupTitle))).setText("Welcome " + (activity.getCurrentUser().getUsername().split("@"))[0] + "!");
 
         activity.findViewById(R.id.previewCamera).setOnClickListener(new OnClickListener() {
             @Override
@@ -48,30 +47,10 @@ public class ConfirmCameraView extends BaseView {
         activity.findViewById(R.id.startCameraPage).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                isValid = true;
-
-                String slide = slideName.getText().toString();
-                String cancer = cancerName.getText().toString();
-                String patient = patientName.getText().toString();
-
-                if (slide.isEmpty()) {
-                    slideName.setError("Please enter a valid slide name"); // checks if the slide name is valid
-                    isValid = false;
-                }
-                if (cancer.isEmpty()) {
-                    cancerName.setError("Please enter a valid cancer name"); // checks if the cancer name is valid
-                    isValid = false;
-                }
-                if (patient.isEmpty()) {
-                    patientName.setError("Please enter a valid slide ID"); // checks if the patient name is valid
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    activity.setName(patient);
-                    activity.setCancer(cancer);
-                    activity.setSlide(slide);
-                    activity.changeView(new MainView(activity)); // switches to picture capturing page
+                String[] formInputs = {slideName.getText().toString(), cancerName.getText().toString(), patientName.getText().toString()};
+                if (checkValidity(formInputs, new EditText[]{slideName, cancerName, patientName},
+                        new String[]{"Please input a valid slide type!", "Please input a valid cancer type!", "Please input a valid accession number!"})) {
+                    inputForm(formInputs);
                 }
             }
         });
@@ -85,7 +64,29 @@ public class ConfirmCameraView extends BaseView {
         try {
             activity.startActivityForResult(takePictureIntent, 1); // opens up Android camera for camera calibration
         } catch (ActivityNotFoundException e) {
-            System.out.println("Couldn't do it, sorry");
+            System.out.println(e);
         }
+    }
+
+    @Override
+    public boolean checkValidity(String[] formInputs, EditText[] forms, String[] errorMessages) {
+        boolean isValid = true;
+
+        for (int i = 0; i < formInputs.length; i++) {
+            if (formInputs[i].isEmpty()) {
+                forms[i].setError(errorMessages[i]);
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    @Override
+    public void inputForm(String formInputs[]) {
+        activity.getCurrentUser().setName(formInputs[0]);
+        activity.getCurrentUser().setCancer(formInputs[1]);
+        activity.getCurrentUser().setSlide(formInputs[2]);
+        activity.changeView(new MainView(activity, R.layout.activity_main)); // switches to picture capturing page
     }
 }

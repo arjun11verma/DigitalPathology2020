@@ -1,8 +1,10 @@
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Views;
 
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
+
+import com.example.digitalpath2020.R;
 
 public class FinalUploadView extends BaseView {
     /**
@@ -10,8 +12,8 @@ public class FinalUploadView extends BaseView {
      *
      * @param context Instance of the main activity
      */
-    public FinalUploadView(Context context, String message) {
-        super(context);
+    public FinalUploadView(Context context, int layout, String message) {
+        super(context, layout);
 
         activity.setContentView(R.layout.final_upload_activity);
         ((TextView)(activity.findViewById(R.id.finalMessage))).setText(message);
@@ -21,7 +23,7 @@ public class FinalUploadView extends BaseView {
             public void onClick(View v) {
                 activity.resetClick();
                 activity.getServerConnection().setDone();
-                activity.changeView(new ConfirmCameraView(activity));
+                activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
             }
         });
 
@@ -29,7 +31,7 @@ public class FinalUploadView extends BaseView {
             @Override
             public void onClick(View v) {
                 activity.logout();
-                activity.changeView(new LoginView(activity));
+                activity.changeView(new LoginView(activity, R.layout.login_activity));
             }
         });
     }

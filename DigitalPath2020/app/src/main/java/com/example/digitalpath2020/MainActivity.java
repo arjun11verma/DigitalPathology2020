@@ -13,7 +13,14 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
-import android.widget.FrameLayout;
+
+import com.example.digitalpath2020.Backend.MDatabase;
+import com.example.digitalpath2020.Backend.ServerConnect;
+import com.example.digitalpath2020.ExternalClasses.Patient;
+import com.example.digitalpath2020.ExternalClasses.Task;
+import com.example.digitalpath2020.Views.AfterCaptureView;
+import com.example.digitalpath2020.Views.BaseView;
+import com.example.digitalpath2020.Views.LoginView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -21,10 +28,7 @@ import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -50,13 +54,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private boolean clicked = false; // Prevents a crash by stopping the button after it has been clicked once
 
     private MDatabase database; // AWS database to be connected to through the MongoDB client
-    private String username; // User data
-    private String slide, cancer, name; // User data
+    private Patient currentUser = new Patient();
     private ServerConnect serverConnection; // Connection to the Python Image Processing Server using the Volley HTTP library
 
     MainActivity activity = this; // Instance of the main activity to pass to other classes
     private BaseView currentView; // Current page of the app
-    private boolean loggedIn = false;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) { // Connects to and loads the OpenCV Library
         @Override
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onCreate(savedInstanceState);
         initDB();
         serverConnection = new ServerConnect(this);
-        changeView(new LoginView(this));
+        changeView(new LoginView(this, R.layout.login_activity));
     }
 
     /**
@@ -103,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      */
     public void logout() {
         database.logout();
-        loggedIn = false;
     }
 
     /**
@@ -171,9 +172,33 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                changeView(new AfterCaptureView(activity)); // goes to the after capture page after the set number of images has been captured
+                changeView(new AfterCaptureView(activity, R.layout.after_capture_activity)); // goes to the after capture page after the set number of images has been captured
             }
         });
+    }
+
+    /**
+     * Resizes Mat to fit phone screen
+     *
+     * @param baseScreen Input Mat
+     * @return Resized Mat
+     */
+    public Mat resizeScreen(Mat baseScreen, int aspectWidth, int aspectHeight) {
+        double scaleFactor = Math.min(aspectWidth/baseScreen.size().width, aspectHeight/baseScreen.size().height);
+        Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
+
+        int top = 0, bottom = 0, left = 0, right = 0;
+        if(baseScreen.size().width < aspectWidth) {
+            left = (int)((aspectWidth - baseScreen.size().width)/2); right = left;
+            right += aspectWidth - (right + left + baseScreen.size().width);
+        } else {
+            top = (int)((aspectHeight - baseScreen.size().height)/2); bottom = top;
+            top += aspectHeight - (top + bottom + baseScreen.size().height);
+        }
+
+        Core.copyMakeBorder(baseScreen, baseScreen, top, bottom, left, right, Core.BORDER_CONSTANT);
+
+        return baseScreen;
     }
 
     /**
@@ -226,35 +251,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    changeView(new AfterCaptureView(activity)); // goes to the after capture page after the set number of images has been captured
+                    changeView(new AfterCaptureView(activity, R.layout.after_capture_activity)); // goes to the after capture page after the set number of images has been captured
                 }
             });
         }
 
-        if(matList.size() > prev) {
+        if (matList.size() > prev) {
             prev++;
-
             baseScreen = matList.get(matList.size() - 1).clone();
-
-            System.out.println("Width: " + aspectWidth);
-            System.out.println("Height: " + aspectHeight);
-
-            double scaleFactor = Math.min(aspectWidth/baseScreen.size().width, aspectHeight/baseScreen.size().height);
-            Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
-
-            System.out.println(baseScreen.size());
-
-            int top = 0, bottom = 0, left = 0, right = 0;
-            if(baseScreen.size().width < aspectWidth) {
-                left = (int)((aspectWidth - baseScreen.size().width)/2); right = left;
-                right += aspectWidth - (right + left + baseScreen.size().width);
-            } else {
-                top = (int)((aspectHeight - baseScreen.size().height)/2); bottom = top;
-                top += aspectHeight - (top + bottom + baseScreen.size().height);
-            }
-
-            Core.copyMakeBorder(baseScreen, baseScreen, top, bottom, left, right, Core.BORDER_CONSTANT);
-            System.out.println(baseScreen.size());
+            baseScreen = resizeScreen(baseScreen, aspectWidth, aspectHeight);
         }
 
         return baseScreen;
@@ -312,8 +317,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         matList.add(mat);
     }
 
-    public JavaCameraView getCameraView() { return cameraView; }
-
     public CameraBridgeViewBase.CvCameraViewFrame getBaseFrame() {
         return baseFrame;
     }
@@ -330,51 +333,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return matList;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
     public Realm getRealm() {
         return database.getRealm();
-    }
-
-    public String getSlide() {
-        return slide;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getCancer() {
-        return cancer;
-    }
-
-    public void setSlide(String slide) {
-        this.slide = slide;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setCancer(String cancer) {
-        this.cancer = cancer;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public ServerConnect getServerConnection() {
         return serverConnection;
     }
 
-    public void setLoggedIn(boolean set) {
-        loggedIn = set;
+    public Patient getCurrentUser() {
+        return currentUser;
     }
-
-    public int getAspectWidth() { return aspectWidth; }
-
-    public int getAspectHeight() { return aspectHeight; }
 }

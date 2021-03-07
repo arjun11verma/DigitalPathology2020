@@ -5,16 +5,14 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Views;
 
 import android.content.Context;
 import android.view.View;
 
-import org.opencv.android.JavaCamera2View;
-import org.opencv.android.JavaCameraView;
+import com.example.digitalpath2020.R;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import org.opencv.android.JavaCameraView;
 
 public class MainView extends BaseView {
     /**
@@ -23,12 +21,10 @@ public class MainView extends BaseView {
      * Assigns the activity's button action and stop camera methods to the start/stop camera buttons respectively
      * @param context A reference to the instance of the main activity class
      */
-    public MainView(Context context) {
-        super(context);
+    public MainView(Context context, int layout) {
+        super(context, layout);
 
         checkLoggedIn();
-
-        activity.setContentView(R.layout.activity_main);
 
         activity.activateCamera((JavaCameraView) activity.findViewById(R.id.camera));
 

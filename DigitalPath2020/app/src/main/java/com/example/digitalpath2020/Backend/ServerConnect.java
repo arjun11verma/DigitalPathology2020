@@ -4,7 +4,7 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Backend;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -13,6 +13,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.digitalpath2020.MainActivity;
+import com.example.digitalpath2020.R;
+import com.example.digitalpath2020.Views.FinalUploadView;
+import com.example.digitalpath2020.Views.PostUploadView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +42,7 @@ public class ServerConnect {
      * Determines whether to the post was successful or not
      * @param postObject JSON object to be sent to the server
      */
-    public void makePost(JSONObject postObject) {
+    public void sendImages(JSONObject postObject) {
         if(!done) {
             System.out.println("Method Called!");
             String postUrl = serverUrl + "/acceptImages";
@@ -50,9 +54,9 @@ public class ServerConnect {
                         String stitchedData =  (String) response.get("imageData");
 
                         if((response.get("response")).equals("N")) {
-                            activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again.", null));
+                            activity.changeView(new PostUploadView(activity, R.layout.post_upload_activity, "Your upload was NOT successful, please try again.", null));
                         } else {
-                            activity.changeView(new PostUploadView(activity, "Your upload was successful!", stitchedData));
+                            activity.changeView(new PostUploadView(activity, R.layout.post_upload_activity, "Your upload was successful!", stitchedData));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -61,7 +65,7 @@ public class ServerConnect {
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    activity.changeView(new PostUploadView(activity, "Your upload was NOT successful, please try again.", null));
+                    activity.changeView(new PostUploadView(activity, R.layout.post_upload_activity, "Your upload was NOT successful, please try again.", null));
                     success = false;
                     System.out.println(error);
                 }
@@ -71,6 +75,7 @@ public class ServerConnect {
                     0,
                     DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
             queue.add(request);
+
             done = true;
         }
     }
@@ -91,7 +96,7 @@ public class ServerConnect {
                     System.out.println(e);
                 }
 
-                activity.changeView(new FinalUploadView(activity, "Your image was uploaded " + returnString + "! You can either logout or choose to take more slide images"));
+                activity.changeView(new FinalUploadView(activity, R.layout.final_upload_activity,"Your image was uploaded " + returnString + "! You can either logout or choose to take more slide images"));
             }
         }, new Response.ErrorListener() {
             @Override
@@ -103,6 +108,7 @@ public class ServerConnect {
         request.setRetryPolicy(new DefaultRetryPolicy(600000,
                 0,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         queue.add(request);
     }
 

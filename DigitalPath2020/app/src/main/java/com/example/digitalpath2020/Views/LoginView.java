@@ -5,17 +5,19 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Views;
 
 import android.content.Context;
 import android.view.View;
 import android.widget.EditText;
 
+import com.example.digitalpath2020.R;
+
 import io.realm.mongodb.App;
 import io.realm.mongodb.Credentials;
 import io.realm.mongodb.User;
 
-public class LoginView extends BaseView {
+public class LoginView extends BaseView implements FormFillable {
     private Credentials connectCred; // Login credentials
     private boolean isValid = true; // Boolean determining whether login information is valid or not
     private EditText usernameText; // Text input for username
@@ -27,14 +29,8 @@ public class LoginView extends BaseView {
      * Sets the login button to the login method and the create account button to a method that redirects the user to the create account page
      * @param context Instance of the main activity
      */
-    public LoginView(Context context) {
-        super(context);
-
-        if(activity.isLoggedIn()) {
-            activity.setUsername(app.currentUser().getProfile().getEmail() == null ? "Default" : app.currentUser().getProfile().getEmail());
-            activity.setLoggedIn(true);
-            activity.changeView(new ConfirmCameraView(activity));
-        }
+    public LoginView(Context context, int layout) {
+        super(context, layout);
 
         activity.setContentView(R.layout.login_activity);
 
@@ -51,7 +47,7 @@ public class LoginView extends BaseView {
         activity.findViewById(R.id.createBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.changeView(new CreateAccountView(activity));
+                activity.changeView(new CreateAccountView(activity, R.layout.create_account_activity));
             }
         });
     }
@@ -60,18 +56,22 @@ public class LoginView extends BaseView {
      * Logs in a user based off of their username and password input. Notifies user if the username/password are invalid
      */
     private void login() {
-        final String username = usernameText.getText().toString();
-        String password = passwordText.getText().toString();
+        String[] formInputs = new String[]{usernameText.getText().toString(), passwordText.getText().toString()};
+        checkValidity(formInputs, new EditText[]{usernameText, passwordText}, new String[]{"Please enter a valid username!", "Please enter a valid password!"});
+    }
 
-        if (username.isEmpty()) {
-            usernameText.setError("Please enter a valid username!");
-            isValid = false;
+    @Override
+    public boolean checkValidity(String[] formInputs, final EditText[] forms, final String[] errorMessages) {
+        boolean isValid = true;
+
+        for (int i = 0; i < formInputs.length; i++) {
+            if (formInputs[i].isEmpty()) {
+                forms[i].setError(errorMessages[i]);
+                isValid = false;
+            }
         }
 
-        if (password.isEmpty()) {
-            passwordText.setError("Please enter a valid password!");
-            isValid = false;
-        }
+        final String username = formInputs[0], password = formInputs[1];
 
         if (isValid) {
             connectCred = Credentials.emailPassword(username, password);
@@ -79,19 +79,21 @@ public class LoginView extends BaseView {
                 @Override
                 public void onResult(App.Result<User> result) {
                     if (result.isSuccess()) {
-                        activity.setUsername(username);
-                        activity.changeView(new ConfirmCameraView(activity));
-                        activity.setLoggedIn(true);
-                        System.out.println("Successfully logged into MongoDB. Nice!");
-                        System.out.println(app.currentUser().getProfile().getEmail());
+                        activity.getCurrentUser().setUsername(username);
+                        activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
                     } else {
-                        System.out.println("You couldn't log in.");
-                        String error = "Your username or password is incorrect.";
-                        usernameText.setError(error);
-                        passwordText.setError(error);
+                        usernameText.setError(errorMessages[0]);
+                        passwordText.setError(errorMessages[1]);
                     }
                 }
             });
         }
+
+        return isValid;
+    }
+
+    @Override
+    public void inputForm(String[] formInputs) {
+
     }
 }

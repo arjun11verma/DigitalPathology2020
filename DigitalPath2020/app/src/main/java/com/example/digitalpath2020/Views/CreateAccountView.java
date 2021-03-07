@@ -5,15 +5,18 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Views;
 
 import android.content.Context;
 import android.view.View;
 import android.widget.EditText;
 
+import com.example.digitalpath2020.MainActivity;
+import com.example.digitalpath2020.R;
+
 import io.realm.mongodb.App;
 
-public class CreateAccountView extends BaseView {
+public class CreateAccountView extends BaseView implements FormFillable {
     private boolean isValid = true; // Boolean determining whether account information is valid or not
     private EditText usernameText; // Text input for username
     private EditText passwordText; // Text input for password
@@ -24,10 +27,8 @@ public class CreateAccountView extends BaseView {
      * Sets the create account button to the createAccount method
      * @param context Instance of the main activity
      */
-    public CreateAccountView(Context context) {
-        super(context);
-        activity = (MainActivity) context;
-        activity.setContentView(R.layout.create_account_activity);
+    public CreateAccountView(Context context, int layout) {
+        super(context, layout);
 
         usernameText = activity.findViewById(R.id.createUsername);
         passwordText = activity.findViewById(R.id.createPassword);
@@ -45,33 +46,40 @@ public class CreateAccountView extends BaseView {
      * Determines whether input is valid and then creates an account if it is using the MongoDB API
      */
     private void createAccount() {
-        String username = usernameText.getText().toString();
-        String password = passwordText.getText().toString();
+        String[] formInputs = {usernameText.getText().toString(), passwordText.getText().toString()};
+        checkValidity(formInputs, new EditText[]{usernameText, passwordText}, new String[]{"Please enter a valid email!", "Please enter a longer password!"});
+    }
 
-        if (username.isEmpty()) {
-            usernameText.setError("Please enter a valid email!"); // checks if username is valid
-            isValid = false;
-        }
+    @Override
+    public boolean checkValidity(String[] formInputs, final EditText[] forms, String[] errorMessages) {
+        boolean isValid = true;
 
-        if (password.isEmpty()) {
-            passwordText.setError("Please enter a valid password!"); // checks if password is valid
-            isValid = false;
+        for (int i = 0; i < formInputs.length; i++) {
+            if (formInputs[i].isEmpty()) {
+                forms[i].setError(errorMessages[i]);
+                isValid = false;
+            }
         }
 
         if (isValid) {
-            app.getEmailPassword().registerUserAsync(username, password, new App.Callback() {
+            app.getEmailPassword().registerUserAsync(formInputs[0], formInputs[1], new App.Callback() {
                 @Override
                 public void onResult(App.Result result) { // makes an async call to the database to register a user
                     if (result.isSuccess()) {
-                        System.out.println("Account Creation Succeeded.");
-                        activity.changeView(new LoginView(activity)); // switches to the login page
+                        activity.changeView(new LoginView(activity, R.layout.login_activity)); // switches to the login page
                     } else {
-                        usernameText.setError("Please enter a valid email.");
-                        passwordText.setError("Please enter a longer password.");
-                        System.out.println("Account Creation Failed.");
+                        forms[0].setError("Please enter a valid email.");
+                        forms[1].setError("Please enter a longer password.");
                     }
                 }
             });
         }
+
+        return isValid;
+    }
+
+    @Override
+    public void inputForm(String[] formInputs) {
+
     }
 }

@@ -5,7 +5,7 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Views;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,16 +15,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import org.bson.types.ObjectId;
+import com.example.digitalpath2020.R;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import java.io.ByteArrayOutputStream;
-
-import io.realm.Realm;
-import io.realm.mongodb.sync.SyncConfiguration;
+import java.util.List;
 
 public class AfterCaptureView extends BaseView {
     private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // Empty array of Bitmaps whose length is equivalent to the number of images captured
@@ -39,28 +38,14 @@ public class AfterCaptureView extends BaseView {
      * Sets the upload images button's click to the serverUpload method and sets the retake images button's click to a method that redirects to the image capture page
      * @param context A reference to the instance of the main activity class
      */
-    public AfterCaptureView(Context context) {
-        super(context);
-
-        activity.setContentView(R.layout.after_capture_activity);
+    public AfterCaptureView(Context context, int layout) {
+        super(context, layout);
 
         uploading = activity.findViewById(R.id.uploadingBar);
         uploading.setVisibility(View.GONE);
 
-        LinearLayout lay = activity.findViewById(R.id.imageLayout);
-
-        for (int i = 0; i < activity.getMatList().size(); i++) {
-            bitArr[i] = (toBitmap(activity.getMatList().get(i)));
-            ImageView view = new ImageView(activity);
-            view.setImageBitmap(bitArr[i]);
-            view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
-            lay.addView(view);
-
-            byteArr[i] = toByteArray(bitArr[i]);
-
-            System.out.println(byteArr[i].length);
-        }
+        LinearLayout imageLayout = activity.findViewById(R.id.imageLayout);
+        addImagesToDisplay(activity.getMatList(), imageLayout);
 
         activity.findViewById(R.id.uploadImgBtn).setOnClickListener(new OnClickListener() {
             @Override
@@ -73,9 +58,21 @@ public class AfterCaptureView extends BaseView {
             @Override
             public void onClick(View v) {
                 activity.resetClick();
-                activity.changeView(new ConfirmCameraView(activity));
+                activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
             }
         });
+    }
+
+    public void addImagesToDisplay(List<Mat> matList, LinearLayout imageLayout) {
+        for (int i = 0; i < matList.size(); i++) {
+            bitArr[i] = (toBitmap(activity.getMatList().get(i)));
+            ImageView view = new ImageView(activity);
+            view.setImageBitmap(bitArr[i]);
+            view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            imageLayout.addView(view);
+            byteArr[i] = toByteArray(bitArr[i]);
+        }
     }
 
     /**
@@ -110,15 +107,14 @@ public class AfterCaptureView extends BaseView {
             JSONObject object = new JSONObject();
 
             try {
-                object.put("name", activity.getName());
-                object.put("cancer", activity.getCancer());
-                object.put("slide", activity.getSlide());
-                object.put("username", activity.getUsername());
+                object.put("name", activity.getCurrentUser().getName());
+                object.put("cancer", activity.getCurrentUser().getCancer());
+                object.put("slide", activity.getCurrentUser().getSlide());
+                object.put("username", activity.getCurrentUser().getUsername());
 
                 for (int i = 0; i < bitArr.length; i++) {
                     String tag = "" + i;
                     object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
-                    System.out.println(i);
                 }
             } catch (JSONException e) {
                 System.out.println(e);
@@ -126,40 +122,7 @@ public class AfterCaptureView extends BaseView {
 
             clicked = true;
 
-            activity.getServerConnection().makePost(object);
-
-            System.out.println("Images sent to server!");
+            activity.getServerConnection().sendImages(object);
         }
-    }
-
-    /**
-     * Uploads the images directly to the MongoDB database. This method is no longer in use
-     */
-    public void mongoUpload() {
-        SyncConfiguration config = new SyncConfiguration.Builder(activity.getApp().currentUser(), "digitalpath").build();
-        Realm mongoRealm = Realm.getInstance(config); // gets an instance of the MongoDB realm based off of the current logged in user
-
-        mongoRealm.executeTransactionAsync(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                ObjectId id = new ObjectId();
-                ImageSet imgSet = realm.createObject(ImageSet.class, id); // creates an ImageSet object in MongoDB
-
-                imgSet.setCancer(activity.getCancer());
-                imgSet.setName(activity.getName());
-                imgSet.setSlide(activity.getSlide());
-                imgSet.setUsername(activity.getUsername());
-
-                for (int i = 0; i < bitArr.length; i++) { // uploads the image objects to the ImageSet object in MongoDB
-                    ImageObject imgObj = realm.createEmbeddedObject(ImageObject.class, imgSet, "imageObjects"); // uploads the object
-                    imgObj.setImage(toByteArray(bitArr[i])); // uploads the image data
-                    imgObj.setImageType("JPEG");
-                }
-            }
-
-        });
-        mongoRealm.close();
-
-        activity.changeView(new PostUploadView(activity, "Deprecated", "Deprecated"));
     }
 }

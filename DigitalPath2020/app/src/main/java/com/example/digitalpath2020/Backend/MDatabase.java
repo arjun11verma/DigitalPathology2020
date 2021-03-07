@@ -4,9 +4,11 @@
  * @version 1.0
  */
 
-package com.example.digitalpath2020;
+package com.example.digitalpath2020.Backend;
 
 import android.app.Application;
+
+import com.example.digitalpath2020.BuildConfig;
 
 import io.realm.Realm;
 import io.realm.log.LogLevel;
