@@ -38,7 +38,9 @@ def uploadImage():
    post_data = (literal_eval(request.data.decode('utf8')))
    slide_id = post_data['name']
 
-   previous_image_set = images.find_one_or_404({'username': slide_id})
+   print(post_data)
+
+   previous_image_set = images.find_one_or_404({'name': slide_id})
 
    if previous_image_set:
       mongo_id = None

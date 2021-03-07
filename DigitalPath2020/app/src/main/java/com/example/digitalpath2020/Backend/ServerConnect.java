@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 public class ServerConnect {
     private RequestQueue queue; // Volley request queue
-    private String serverUrl = "http://f93dbd2048d4.ngrok.io"; // Server url
+    private String serverUrl = "http://b2b492799522.ngrok.io"; // Server url
     private MainActivity activity; // Instance of the main activity
     private boolean done = false; // Boolean representing whether the call was made
     private boolean success = true; // Boolean representing whether the call was a success
@@ -44,7 +44,6 @@ public class ServerConnect {
      */
     public void sendImages(JSONObject postObject) {
         if(!done) {
-            System.out.println("Method Called!");
             String postUrl = serverUrl + "/acceptImages";
 
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
@@ -52,7 +51,6 @@ public class ServerConnect {
                 public void onResponse(JSONObject response) {
                     try {
                         String stitchedData =  (String) response.get("imageData");
-
                         if((response.get("response")).equals("N")) {
                             activity.changeView(new PostUploadView(activity, R.layout.post_upload_activity, "Your upload was NOT successful, please try again.", null));
                         } else {
@@ -89,18 +87,18 @@ public class ServerConnect {
                 String returnString = "unsuccessfully";
                 try {
                     if (((String)response.get("response")).equals("Y")) {
-                        System.out.println("Uploaded Successfully!");
                         returnString = "successfully";
                     }
                 } catch (JSONException e) {
                     System.out.println(e);
                 }
 
-                activity.changeView(new FinalUploadView(activity, R.layout.final_upload_activity,"Your image was uploaded " + returnString + "! You can either logout or choose to take more slide images"));
+                activity.changeView(new FinalUploadView(activity, R.layout.final_upload_activity,"Your image was uploaded " + returnString + ". You can either logout or choose to take more slide images"));
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                activity.changeView(new FinalUploadView(activity, R.layout.final_upload_activity,"Your image was uploaded unsuccessfully. You can either logout or choose to take more slide images"));
                 System.out.println(error);
             }
         });
