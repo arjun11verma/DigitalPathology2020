@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e17e190f-3b08-4dc3-966b-c539daeb4b8e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DigitalPath2020/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/DigitalPath2020/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DigitalPath2020/app/src/main/java/com/example/digitalpath2020/MDatabase.java" beforeDir="false" afterPath="$PROJECT_DIR$/DigitalPath2020/app/src/main/java/com/example/digitalpath2020/MDatabase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ImageProcessingServer/ImageStichAlgorithm/ImageProcessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/ImageProcessingServer/ImageStichAlgorithm/ImageProcessor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ImageProcessingServer/driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/ImageProcessingServer/driver.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1onXO6scyc6eelipnbKia0f32EG" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/ImageProcessingServer" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e17e190f-3b08-4dc3-966b-c539daeb4b8e" name="Default Changelist" comment="" />
+      <created>1613923293144</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1613923293144</updated>
+    </task>
+    <servers />
+  </component>
+</project>

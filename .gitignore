@@ -23,3 +23,23 @@ build
 .env.production.local
 
 npm-debug.log*
+openCVLibrary341/
+
+/ImageProcessingServer/imgProcEnv/
+ImageProcessingServer/ImageStichAlgorithm/__pycache__/__init__.cpython-39.pyc
+ImageProcessingServer/ImageStichAlgorithm/__pycache__/ImageProcessor.cpython-39.pyc
+DigitalPath2020/openCVLibrary341/build/intermediates/incremental/debug-mergeNativeLibs/merge-state
+DigitalPath2020/openCVLibrary341/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+DigitalPath2020/openCVLibrary341/build/intermediates/incremental/mergeDebugShaders/merger.xml
+DigitalPath2020/openCVLibrary341/build/intermediates/incremental/packageDebugAssets/merger.xml
+DigitalPath2020/openCVLibrary341/build/intermediates/incremental/packageDebugResources/compile-file-map.properties
+DigitalPath2020/openCVLibrary341/build/intermediates/incremental/packageDebugResources/merger.xml
+DigitalPath2020/openCVLibrary341/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt
+DigitalPath2020/openCVLibrary341/build/outputs/logs/manifest-merger-debug-report.txt
+ImageProcessingServer/.idea/.gitignore
+ImageProcessingServer/.idea/ImageProcessingServer.iml
+ImageProcessingServer/.idea/misc.xml
+ImageProcessingServer/.idea/modules.xml
+ImageProcessingServer/.idea/vcs.xml
+ImageProcessingServer/.idea/inspectionProfiles/profiles_settings.xml
+ImageProcessingServer/.idea/inspectionProfiles/Project_Default.xml

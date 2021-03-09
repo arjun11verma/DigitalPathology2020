@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import base64
 import os
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 def crop(img_arr, top, left, bottom, right):
     return img_arr[top:bottom, left:right]
@@ -152,3 +154,21 @@ class ImageProcessor:
         new_image = crop(new_image, self.divider, self.divider, self.divider + int(self.inner_len), self.divider + int(self.inner_len))
 
         return new_image
+
+    def imageToEdgeMap(self, img):
+        lowerThresh = 100
+        upperThresh = 200
+        edges = cv2.Canny(img, lowerThresh, upperThresh)
+        return edges
+
+    def colorGraph(self, img):
+        # color graph code from https://www.kdnuggets.com/2019/08/introduction-image-segmentation-k-means-clustering.html
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        r, g, b = cv2.split(img)
+        r = r.flatten()
+        g = g.flatten()
+        b = b.flatten()
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        ax.scatter(r, g, b)
+        plt.show()

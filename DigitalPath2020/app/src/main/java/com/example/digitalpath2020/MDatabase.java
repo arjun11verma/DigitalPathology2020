@@ -8,12 +8,14 @@ package com.example.digitalpath2020;
 
 import android.app.Application;
 
+import io.realm.BuildConfig;
 import io.realm.Realm;
 import io.realm.log.LogLevel;
 import io.realm.log.RealmLog;
 import io.realm.mongodb.App;
 import io.realm.mongodb.AppConfiguration;
 import io.realm.mongodb.User;
+
 
 public class MDatabase extends Application {
     private App taskApp; // MongoDB Realm App
