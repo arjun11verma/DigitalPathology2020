@@ -2,6 +2,7 @@ from ImageStichAlgorithm.ImageProcessor import ImageProcessor
 import numpy as np
 from ImageStichAlgorithm.colorDeconvolution import supervisedDeconv, smnfDeconv
 import cv2
+from ImageStichAlgorithm.segmentation import segmentation
 
 # This is a class for testing the image processing algorithms and verifying sample slide images. It is merely for testing purposes
 
@@ -33,10 +34,12 @@ increase = 1.3
 
 # imgproc.displayImage(imgproc.sharpenImage(stitch_one, sharpening_factor, increase))
 stitched = cv2.imread('stitchedImage2.jpg')
-supDeconv = supervisedDeconv(stitched)
-# 0.5 is a standard sparsity factor
-unSupDeconv = smnfDeconv(stitched, 0.5)
+# supDeconv = supervisedDeconv(stitched)
+# # 0.5 is a standard sparsity factor
+# unSupDeconv = smnfDeconv(stitched, 0.5)
 # imgproc.displayImage(supervisedDeconv(cv2.imread('stitchedImage2.jpg')))
+segmentation(stitched)
+
 
 
 
