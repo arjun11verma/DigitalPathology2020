@@ -147,4 +147,4 @@ def segmentation():
         mrect = mpatches.Rectangle([c[0] - 0.5 * width, c[1] - 0.5 * height] ,
                                 width, height, fill=False, ec='g', linewidth=2)
         plt.gca().add_patch(mrect)
-        plt.savefig('image{0}.png'.format(i), bbox_inches='tight')
+        plt.savefig('segmentedImage{0}.png'.format(i), bbox_inches='tight')
