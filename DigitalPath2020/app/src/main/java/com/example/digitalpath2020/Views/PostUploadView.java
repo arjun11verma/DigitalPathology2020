@@ -16,11 +16,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.digitalpath2020.R;
+import com.example.digitalpath2020.ViewInterfaces.ServerUploadable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class PostUploadView extends BaseView {
+public class PostUploadView extends BaseView implements ServerUploadable {
     /**
      * Constructor for the PostUploadView class
      * Sets the UI to the post upload layout
@@ -32,7 +33,7 @@ public class PostUploadView extends BaseView {
     public PostUploadView(Context context, int layout, String status, String stitchedImage) {
         super(context, layout);
 
-        checkLoggedIn();
+        checkLoggedIn(false);
 
         verifyAndDisplayImage(stitchedImage, (ImageView) activity.findViewById(R.id.stitchedImage));
 
@@ -41,24 +42,26 @@ public class PostUploadView extends BaseView {
         activity.findViewById(R.id.uploadImages).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendUpload();
+                uploadToServer("Y");
             }
         });
 
         activity.findViewById(R.id.moreImagesBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                uploadToServer("N");
                 activity.resetClick();
                 activity.getServerConnection().setDone();
-                activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
             }
         });
     }
 
-    public void sendUpload() {
+    @Override
+    public void uploadToServer(String status) {
         JSONObject postObject = new JSONObject();
 
         try {
+            postObject.put("status", status);
             postObject.put("name", activity.getCurrentUser().getName());
         } catch (JSONException e) {
             System.out.println(e);

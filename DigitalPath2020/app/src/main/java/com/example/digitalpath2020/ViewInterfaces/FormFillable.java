@@ -1,4 +1,4 @@
-package com.example.digitalpath2020.Views;
+package com.example.digitalpath2020.ViewInterfaces;
 
 import android.widget.EditText;
 

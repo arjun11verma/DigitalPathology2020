@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.example.digitalpath2020.R;
+import com.example.digitalpath2020.ViewInterfaces.ServerUploadable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +26,7 @@ import org.opencv.core.Mat;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 
-public class AfterCaptureView extends BaseView {
+public class AfterCaptureView extends BaseView implements ServerUploadable {
     private Bitmap[] bitArr = new Bitmap[activity.getMatList().size()]; // Empty array of Bitmaps whose length is equivalent to the number of images captured
     private byte[][] byteArr = new byte[activity.getMatList().size()][]; // Empty array of byte arrays whose length is equivalent to the number of images captured
     private boolean clicked = false; // Boolean to prevent button from being over-clicked
@@ -41,6 +42,8 @@ public class AfterCaptureView extends BaseView {
     public AfterCaptureView(Context context, int layout) {
         super(context, layout);
 
+        checkLoggedIn(false);
+
         uploading = activity.findViewById(R.id.uploadingBar);
         uploading.setVisibility(View.GONE);
 
@@ -50,7 +53,7 @@ public class AfterCaptureView extends BaseView {
         activity.findViewById(R.id.uploadImgBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                serverUpload();
+                uploadToServer("");
             }
         });
 
@@ -97,10 +100,8 @@ public class AfterCaptureView extends BaseView {
         return bos.toByteArray();
     }
 
-    /**
-     * Uploads the entire set of images alongside the user data in a JSON object to the Python server by utilizing the server connection
-     */
-    public void serverUpload() {
+    @Override
+    public void uploadToServer(String status) {
         if (!clicked) {
             uploading.setVisibility(View.VISIBLE);
 
@@ -112,7 +113,7 @@ public class AfterCaptureView extends BaseView {
                 object.put("slide", activity.getCurrentUser().getSlide());
                 object.put("username", activity.getCurrentUser().getUsername());
 
-                for (int i = 0; i < bitArr.length; i++) {
+                for (int i = 0; i < byteArr.length; i++) {
                     String tag = "" + i;
                     object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
                 }

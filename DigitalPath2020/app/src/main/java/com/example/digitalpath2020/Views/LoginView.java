@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.example.digitalpath2020.R;
+import com.example.digitalpath2020.ViewInterfaces.FormFillable;
 
 import io.realm.mongodb.App;
 import io.realm.mongodb.Credentials;
@@ -31,7 +32,7 @@ public class LoginView extends BaseView implements FormFillable {
     public LoginView(Context context, int layout) {
         super(context, layout);
 
-        activity.setContentView(R.layout.login_activity);
+        checkLoggedIn(true);
 
         usernameText = activity.findViewById(R.id.username);
         passwordText = activity.findViewById(R.id.password);

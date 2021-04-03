@@ -48,7 +48,10 @@ public class Task extends TimerTask {
         if(true) activity.addMat(mRET);
     }
 
-    public void defineBoundaries() {
+    /**
+     * Defines the black space boundaries of the image
+     */
+    private void defineBoundaries() {
         topFlag = true;
         leftFlag = true;
         bottomFlag = false;

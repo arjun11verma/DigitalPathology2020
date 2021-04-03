@@ -15,7 +15,8 @@ public class FinalUploadView extends BaseView {
     public FinalUploadView(Context context, int layout, String message) {
         super(context, layout);
 
-        activity.setContentView(R.layout.final_upload_activity);
+        checkLoggedIn(false);
+
         ((TextView)(activity.findViewById(R.id.finalMessage))).setText(message);
 
         activity.findViewById(R.id.moreImagesBtnFinal).setOnClickListener(new OnClickListener() {

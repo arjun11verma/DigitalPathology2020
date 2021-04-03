@@ -32,9 +32,13 @@ public abstract class BaseView extends View {
     /**
      * Checks if the current user is logged in and redirects them to the login page if not
      */
-    public void checkLoggedIn() {
+    public void checkLoggedIn(boolean loginPage) {
         if(!activity.isLoggedIn()) {
-            activity.changeView(new LoginView(activity, R.layout.login_activity));
+            if (loginPage) {
+                activity.changeView(new ConfirmCameraView(activity, R.layout.login_activity));
+            } else {
+                activity.changeView(new LoginView(activity, R.layout.login_activity));
+            }
         }
     }
 }

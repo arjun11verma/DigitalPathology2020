@@ -11,8 +11,8 @@ import android.content.Context;
 import android.view.View;
 import android.widget.EditText;
 
-import com.example.digitalpath2020.MainActivity;
 import com.example.digitalpath2020.R;
+import com.example.digitalpath2020.ViewInterfaces.FormFillable;
 
 import io.realm.mongodb.App;
 

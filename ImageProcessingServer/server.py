@@ -40,16 +40,19 @@ def uploadImage():
 
    print(post_data)
 
-   previous_image_set = images.find_one_or_404({'name': slide_id})
+   if (post_data['status'] == "Y"):
+      previous_image_set = images.find({'name': slide_id})
 
-   if previous_image_set:
       mongo_id = None
-   else: 
       mongo_id = images.insert_one(held_images[slide_id])
-   
-   print(mongo_id)
+      
+      print(mongo_id)
 
-   if mongo_id: return {'response': "Y"} 
+      if mongo_id: 
+         if (slide_id in held_images): del held_images[slide_id]
+         return {'response': "Y"} 
+
+   if (slide_id in held_images): del held_images[slide_id]
    return {'response': "N"}
 
 @app.route('/acceptImages', methods = ['POST'])
