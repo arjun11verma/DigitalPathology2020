@@ -20,7 +20,6 @@ import com.example.digitalpath2020.ExternalClasses.Patient;
 import com.example.digitalpath2020.ExternalClasses.Task;
 import com.example.digitalpath2020.Views.AfterCaptureView;
 import com.example.digitalpath2020.Views.BaseView;
-import com.example.digitalpath2020.Views.ConfirmCameraView;
 import com.example.digitalpath2020.Views.LoginView;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -47,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
     private int aspectWidth, aspectHeight, prev = 0;
 
-    private int maxNumImages = 100; // The maximum number of pictures that will be taken
+    private int maxNumImages = 50; // The maximum number of pictures that will be taken
     private int delay = 2000; // Delay until camera starts in milliseconds
     private int period = 2500; // Period of time between each picture being taken
     private Timer timer; // Timer that will control when each picture is being taken
@@ -60,8 +59,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     MainActivity activity = this; // Instance of the main activity to pass to other classes
     private BaseView currentView; // Current page of the app
-
-    private String devServerUrl; // for development purposes only
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) { // Connects to and loads the OpenCV Library
         @Override
@@ -158,31 +155,20 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     /**
      * Stops the camera and switches the view to the post capture page
      */
-    public void cancelCamera() {
-        try {
-            timer.cancel(); // stops the timer
-            timer.purge(); // makes the timertask stop occuring
+    public void stopCamera() {
+        if (clicked) {
+            timer.cancel();
+            timer.purge();
             cameraView.disconnectCamera();
             cameraView.disableView();
-        } catch (NullPointerException nullException) {
-            System.out.println(nullException);
         }
 
-        if (matList.size() == 0) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity)); // goes to the after capture page after the set number of images has been captured
-                }
-            });
-        } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    changeView(new AfterCaptureView(activity, R.layout.after_capture_activity)); // goes to the after capture page after the set number of images has been captured
-                }
-            });
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                changeView(new AfterCaptureView(activity, R.layout.after_capture_activity)); // goes to the after capture page after the set number of images has been captured
+            }
+        });
     }
 
     /**
@@ -191,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * @param baseScreen Input Mat
      * @return Resized Mat
      */
-    private Mat resizeScreen(Mat baseScreen, int aspectWidth, int aspectHeight) {
+    public Mat resizeScreen(Mat baseScreen, int aspectWidth, int aspectHeight) {
         double scaleFactor = Math.min(aspectWidth/baseScreen.size().width, aspectHeight/baseScreen.size().height);
         Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
 
@@ -213,7 +199,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * Resets the button so it is clickable
      */
     public void resetClick() {
-        matList.clear();
         clicked = false;
     }
 
@@ -250,8 +235,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             aspectWidth = (int) baseFrame.rgba().size().width;
         }
 
-        if (matList.size() == (maxNumImages + 1)) {
-            cancelCamera();
+        if (matList.size() == (maxNumImages + 1)) // disables the camera after numImages pictures have been taken
+        {
+            timer.cancel(); // stops the timer
+            timer.purge(); // makes the timertask stop occuring
+            cameraView.disconnectCamera();
+            cameraView.disableView();
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    changeView(new AfterCaptureView(activity, R.layout.after_capture_activity)); // goes to the after capture page after the set number of images has been captured
+                }
+            });
         }
 
         if (matList.size() > prev) {
@@ -341,13 +337,5 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public Patient getCurrentUser() {
         return currentUser;
-    }
-
-    public void setDevServerUrl(String devServerUrl) {
-        this.devServerUrl = devServerUrl;
-    }
-
-    public String getDevServerUrl() {
-        return devServerUrl;
     }
 }

@@ -24,7 +24,7 @@ public class MainView extends BaseView {
     public MainView(Context context, int layout) {
         super(context, layout);
 
-        checkLoggedIn(false);
+        checkLoggedIn();
 
         activity.activateCamera((JavaCameraView) activity.findViewById(R.id.camera));
 
@@ -38,7 +38,7 @@ public class MainView extends BaseView {
         activity.findViewById(R.id.stopTheCameraBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.cancelCamera();
+                activity.stopCamera();
             }
         });
     }

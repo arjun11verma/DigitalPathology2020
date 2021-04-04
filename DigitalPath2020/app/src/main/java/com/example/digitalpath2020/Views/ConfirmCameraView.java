@@ -15,15 +15,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.digitalpath2020.ExternalClasses.Patient;
 import com.example.digitalpath2020.R;
-import com.example.digitalpath2020.ViewInterfaces.FormFillable;
 
 public class ConfirmCameraView extends BaseView implements FormFillable {
     private EditText slideName; // Name of the type of slide being used
     private EditText cancerName; // Name of the type of cancer
     private EditText patientName; // Name of the patient
-    private EditText devServerUrl;
 
     /**
      * Constructor for the ConfirmCameraView class
@@ -34,14 +31,9 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
     public ConfirmCameraView(Context context, int layout) {
         super(context, layout);
 
-        checkLoggedIn(false);
-
         slideName = activity.findViewById(R.id.slideType);
         cancerName = activity.findViewById(R.id.cancerType);
         patientName = activity.findViewById(R.id.patientName);
-        devServerUrl = activity.findViewById(R.id.devServerUrl);
-
-        reloadOldValues(activity.getCurrentUser());
 
         ((TextView) (activity.findViewById(R.id.setupTitle))).setText("Welcome " + (activity.getCurrentUser().getUsername().split("@"))[0] + "!");
 
@@ -55,22 +47,13 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
         activity.findViewById(R.id.startCameraPage).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                String[] formInputs = {slideName.getText().toString(), cancerName.getText().toString(), patientName.getText().toString(), devServerUrl.getText().toString()};
-                if (checkValidity(formInputs, new EditText[]{slideName, cancerName, patientName, devServerUrl},
+                String[] formInputs = {slideName.getText().toString(), cancerName.getText().toString(), patientName.getText().toString()};
+                if (checkValidity(formInputs, new EditText[]{slideName, cancerName, patientName},
                         new String[]{"Please input a valid slide type!", "Please input a valid cancer type!", "Please input a valid accession number!"})) {
                     inputForm(formInputs);
                 }
             }
         });
-    }
-
-    private void reloadOldValues(Patient currentUser) {
-        if (currentUser.getSlide() != null && currentUser.getCancer() != null && currentUser.getName() != null && activity.getDevServerUrl() != null) {
-            slideName.setText(currentUser.getSlide());
-            cancerName.setText(currentUser.getCancer());
-            patientName.setText(currentUser.getName());
-            devServerUrl.setText(activity.getDevServerUrl());
-        }
     }
 
     /**
@@ -106,7 +89,10 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
         activity.getCurrentUser().setName(formInputs[0]);
         activity.getCurrentUser().setCancer(formInputs[1]);
         activity.getCurrentUser().setSlide(formInputs[2]);
+<<<<<<< HEAD
         activity.getServerConnection().setServerUrl(formInputs[3]);
+=======
+>>>>>>> parent of 0717b92 (Dev Server Url and Refactoring)
         activity.changeView(new MainView(activity, R.layout.activity_main)); // switches to picture capturing page
     }
 }
