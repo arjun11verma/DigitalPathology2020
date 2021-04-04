@@ -108,6 +108,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     }
 
     /**
+     * Determines whether a user is logged in or not
+     * @return Boolean representing whether the user is logged in or not
+     */
+    public boolean isLoggedIn() {
+        return (database.getTaskApp().currentUser() != null && database.getTaskApp().currentUser().isLoggedIn());
+    }
+
+    /**
      * Activates and initializes the camera
      * Sets the JavaCameraView class to take input from the phone's camera
      * @param camera JavaCameraView to be activated

@@ -76,8 +76,6 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
             if (formInputs[i].isEmpty()) {
                 forms[i].setError(errorMessages[i]);
                 isValid = false;
-            } else {
-                formInputs[i] = formInputs[i].trim();
             }
         }
 
@@ -89,10 +87,6 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
         activity.getCurrentUser().setName(formInputs[0]);
         activity.getCurrentUser().setCancer(formInputs[1]);
         activity.getCurrentUser().setSlide(formInputs[2]);
-<<<<<<< HEAD
-        activity.getServerConnection().setServerUrl(formInputs[3]);
-=======
->>>>>>> parent of 0717b92 (Dev Server Url and Refactoring)
         activity.changeView(new MainView(activity, R.layout.activity_main)); // switches to picture capturing page
     }
 }
