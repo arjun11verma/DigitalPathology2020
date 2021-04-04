@@ -46,7 +46,9 @@ public class CreateAccountView extends BaseView implements FormFillable {
      */
     private void createAccount() {
         String[] formInputs = {usernameText.getText().toString(), passwordText.getText().toString()};
-        checkValidity(formInputs, new EditText[]{usernameText, passwordText}, new String[]{"Please enter a valid email!", "Please enter a longer password!"});
+        if (checkValidity(formInputs, new EditText[]{usernameText, passwordText}, new String[]{"Please enter a valid email!", "Please enter a longer password!"})) {
+            inputForm(formInputs);
+        };
     }
 
     @Override
@@ -57,21 +59,9 @@ public class CreateAccountView extends BaseView implements FormFillable {
             if (formInputs[i].isEmpty()) {
                 forms[i].setError(errorMessages[i]);
                 isValid = false;
+            } else {
+                formInputs[i] = formInputs[i].trim();
             }
-        }
-
-        if (isValid) {
-            app.getEmailPassword().registerUserAsync(formInputs[0], formInputs[1], new App.Callback() {
-                @Override
-                public void onResult(App.Result result) { // makes an async call to the database to register a user
-                    if (result.isSuccess()) {
-                        activity.changeView(new LoginView(activity, R.layout.login_activity)); // switches to the login page
-                    } else {
-                        forms[0].setError("Please enter a valid email.");
-                        forms[1].setError("Please enter a longer password.");
-                    }
-                }
-            });
         }
 
         return isValid;
@@ -79,6 +69,16 @@ public class CreateAccountView extends BaseView implements FormFillable {
 
     @Override
     public void inputForm(String[] formInputs) {
-
+        app.getEmailPassword().registerUserAsync(formInputs[0], formInputs[1], new App.Callback() {
+            @Override
+            public void onResult(App.Result result) { // makes an async call to the database to register a user
+                if (result.isSuccess()) {
+                    activity.changeView(new LoginView(activity, R.layout.login_activity)); // switches to the login page
+                } else {
+                    usernameText.setError("Please enter a valid email.");
+                    passwordText.setError("Please enter a longer password.");
+                }
+            }
+        });
     }
 }

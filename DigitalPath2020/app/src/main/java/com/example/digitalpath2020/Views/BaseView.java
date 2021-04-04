@@ -7,6 +7,7 @@
 package com.example.digitalpath2020.Views;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 
 import com.example.digitalpath2020.MainActivity;
@@ -33,12 +34,11 @@ public abstract class BaseView extends View {
      * Checks if the current user is logged in and redirects them to the login page if not
      */
     public void checkLoggedIn(boolean loginPage) {
-        if(!activity.isLoggedIn()) {
-            if (loginPage) {
-                activity.changeView(new ConfirmCameraView(activity, R.layout.login_activity));
-            } else {
-                activity.changeView(new LoginView(activity, R.layout.login_activity));
-            }
+        if (app.currentUser() == null && !loginPage) {
+            activity.changeView(new LoginView(activity, R.layout.login_activity));
+        } else if (loginPage && app.currentUser().getProfile().getEmail() != null) {
+            activity.getCurrentUser().setUsername(app.currentUser().getProfile().getEmail());
+            activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
         }
     }
 }

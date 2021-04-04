@@ -35,7 +35,6 @@ public class ServerConnect {
      */
     public ServerConnect(MainActivity activity) {
         this.activity = activity;
-        this.serverUrl = activity.getDevServerUrl();
         queue = Volley.newRequestQueue(this.activity);
     }
 
@@ -140,4 +139,8 @@ public class ServerConnect {
     }
 
     public boolean getSuccess() { return success; }
+
+    public void setServerUrl(String serverUrl) {
+        this.serverUrl = "https://" + serverUrl + ".ngrok.io";
+    }
 }

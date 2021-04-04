@@ -57,7 +57,9 @@ public class LoginView extends BaseView implements FormFillable {
      */
     private void login() {
         String[] formInputs = new String[]{usernameText.getText().toString(), passwordText.getText().toString()};
-        checkValidity(formInputs, new EditText[]{usernameText, passwordText}, new String[]{"Please enter a valid username!", "Please enter a valid password!"});
+        if (checkValidity(formInputs, new EditText[]{usernameText, passwordText}, new String[]{"Please enter a valid username!", "Please enter a valid password!"})) {
+            inputForm(formInputs);
+        };
     }
 
     @Override
@@ -68,25 +70,9 @@ public class LoginView extends BaseView implements FormFillable {
             if (formInputs[i].isEmpty()) {
                 forms[i].setError(errorMessages[i]);
                 isValid = false;
+            } else {
+                formInputs[i] = formInputs[i].trim();
             }
-        }
-
-        final String username = formInputs[0], password = formInputs[1];
-
-        if (isValid) {
-            connectCred = Credentials.emailPassword(username, password);
-            app.loginAsync(connectCred, new App.Callback<User>() {
-                @Override
-                public void onResult(App.Result<User> result) {
-                    if (result.isSuccess()) {
-                        activity.getCurrentUser().setUsername(username);
-                        activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
-                    } else {
-                        usernameText.setError(errorMessages[0]);
-                        passwordText.setError(errorMessages[1]);
-                    }
-                }
-            });
         }
 
         return isValid;
@@ -94,6 +80,20 @@ public class LoginView extends BaseView implements FormFillable {
 
     @Override
     public void inputForm(String[] formInputs) {
+        final String username = formInputs[0], password = formInputs[1];
 
+        connectCred = Credentials.emailPassword(username, password);
+        app.loginAsync(connectCred, new App.Callback<User>() {
+            @Override
+            public void onResult(App.Result<User> result) {
+                if (result.isSuccess()) {
+                    activity.getCurrentUser().setUsername(username);
+                    activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
+                } else {
+                    usernameText.setError("Please enter a valid username!");
+                    passwordText.setError("Please enter a valid password!");
+                }
+            }
+        });
     }
 }
