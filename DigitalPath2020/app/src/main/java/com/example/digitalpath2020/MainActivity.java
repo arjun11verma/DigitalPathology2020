@@ -22,18 +22,23 @@ import com.example.digitalpath2020.Views.AfterCaptureView;
 import com.example.digitalpath2020.Views.BaseView;
 import com.example.digitalpath2020.Views.ConfirmCameraView;
 import com.example.digitalpath2020.Views.LoginView;
+import com.example.digitalpath2020.Views.MainView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.JavaCamera2View;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
+import org.opencv.core.CvException;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 
@@ -41,15 +46,14 @@ import io.realm.Realm;
 import io.realm.mongodb.App;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
-    private JavaCameraView cameraView; // View that will be accessing the camera, taking pictures and displaying them
+    private JavaCamera2View cameraView; // View that will be accessing the camera, taking pictures and displaying them
     private Mat baseScreen; // Mat objects that will act as temporary storage for camera data
-    private List<Mat> matList = new ArrayList<Mat>(); // List of processed Mat objects for uploading and displaying
+    private List<Mat> matList = new ArrayList<Mat>(100); // List of processed Mat objects for uploading and displaying
     private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
     private int aspectWidth, aspectHeight, prev = 0;
 
-    private int maxNumImages = 100; // The maximum number of pictures that will be taken
-    private int delay = 2000; // Delay until camera starts in milliseconds
-    private int period = 2500; // Period of time between each picture being taken
+    private int delay = 3000; // Delay until camera starts in milliseconds
+    private int period = 3000; // Period of time between each picture being taken
     private Timer timer; // Timer that will control when each picture is being taken
     private Task timerTask; // Task to be executed that will take in and do rudimentary processing on images
     private boolean clicked = false; // Prevents a crash by stopping the button after it has been clicked once
@@ -57,6 +61,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private MDatabase database; // AWS database to be connected to through the MongoDB client
     private Patient currentUser = new Patient();
     private ServerConnect serverConnection; // Connection to the Python Image Processing Server using the Volley HTTP library
+
+    private int divider; // Distance for cropping image
+    private Mat mRGBAT, mRGBA, mGRAY, mBIN, mRET; // Mats to store temporary image data
+    private boolean centered = false; // Determines whether cropping range has been determined or not
+    private int stopRowTop = 0, stopRowBottom = 0, stopColLeft = 0, stopColRight = 0; // Cropping ranges
+    private boolean topFlag, bottomFlag, leftFlag, rightFlag; // Booleans to determine when cropping ranges have been determined
+
+    public boolean imageReady = false;
 
     MainActivity activity = this; // Instance of the main activity to pass to other classes
     private BaseView currentView; // Current page of the app
@@ -91,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onCreate(savedInstanceState);
         initDB();
         serverConnection = new ServerConnect(this);
-        changeView(new LoginView(this, R.layout.login_activity));
+        changeView(new MainView(this, R.layout.activity_main));
     }
 
     /**
@@ -115,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * Sets the JavaCameraView class to take input from the phone's camera
      * @param camera JavaCameraView to be activated
      */
-    public void activateCamera(JavaCameraView camera) {
+    public void activateCamera(JavaCamera2View camera) {
         cameraView = camera;
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
@@ -132,27 +144,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             timerTask.resetCentered();
             timer.schedule(timerTask, delay, period);
             cameraView.enableView();
+
             clicked = true;
             baseScreen = null;
             prev = 0;
-            focus();
         }
-    }
-
-    /**
-     * Refocuses the Android camera
-     */
-    public void focus() {
-        Camera.Parameters parameters = cameraView.mCamera.getParameters();
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        cameraView.mCamera.setParameters(parameters);
-
-        cameraView.mCamera.autoFocus(new Camera.AutoFocusCallback() {
-            @Override
-            public void onAutoFocus(boolean success, Camera camera) {
-                System.out.println(success);
-            }
-        });
     }
 
     /**
@@ -162,8 +158,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         try {
             timer.cancel(); // stops the timer
             timer.purge(); // makes the timertask stop occuring
-            cameraView.disconnectCamera();
-            cameraView.disableView();
+            onDestroy();
         } catch (NullPointerException nullException) {
             System.out.println(nullException);
         }
@@ -235,6 +230,23 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     }
 
+    private void processFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        if (prev == 0) {
+            aspectWidth = inputFrame.rgba().width();
+            aspectHeight = inputFrame.rgba().height();
+        }
+
+        if(imageReady && inputFrame != null) {
+            mRGBA = inputFrame.rgba();
+            mRGBAT = mRGBA.t();
+            Core.flip(mRGBA.t(), mRGBAT, 1);
+            Imgproc.cvtColor(mRGBAT, mRGBAT, Imgproc.COLOR_BGR2RGB);
+            removeBlackSpace();
+            addMat(mRET);
+            imageReady = false;
+        }
+    }
+
     /**
      * Processes the inputs of the camera. The raw data from the camera is constantly being streamed into this method in the form of an OpenCV CvCameraViewFrame
      * This method constantly updates a Mat (Image matrix) in the activity class with the current view of the camera
@@ -243,24 +255,74 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        baseFrame = inputFrame; // updates the system with each frame the android camera captures
-
-        if (prev == 0) {
-            aspectHeight = (int) baseFrame.rgba().size().height;
-            aspectWidth = (int) baseFrame.rgba().size().width;
-        }
-
-        if (matList.size() == (maxNumImages + 1)) {
-            cancelCamera();
-        }
+        processFrame(inputFrame);
 
         if (matList.size() > prev) {
             prev++;
-            baseScreen = matList.get(matList.size() - 1).clone();
-            baseScreen = resizeScreen(baseScreen, aspectWidth, aspectHeight);
+            baseScreen = resizeScreen(matList.get(matList.size() - 1).clone(), aspectWidth, aspectHeight);
         }
 
         return baseScreen;
+    }
+
+    /**
+     * Defines the black space boundaries of the image
+     */
+    private void defineBoundaries() {
+        topFlag = true;
+        leftFlag = true;
+        bottomFlag = false;
+        rightFlag = false;
+        stopRowTop = 0;
+        stopRowBottom = mRGBAT.rows();
+        stopColLeft = 0;
+        stopColRight = mRGBAT.cols();
+
+        mGRAY = new Mat();
+        Imgproc.cvtColor(mRGBAT, mGRAY, Imgproc.COLOR_RGB2GRAY);
+
+        mBIN = new Mat();
+        Imgproc.threshold(mGRAY, mBIN, 50, 5, Imgproc.THRESH_BINARY);
+
+        for(int i = 0; i < mBIN.rows(); i++) {
+            if(topFlag && Core.sumElems(mBIN.row(i)).val[0] > 50) {
+                stopRowTop = i;
+                topFlag = false;
+                bottomFlag = true;
+            } else if (bottomFlag && Core.sumElems(mBIN.row(i)).val[0] < 50) {
+                stopRowBottom = i;
+                bottomFlag = false;
+            }
+        }
+
+        for(int i = 0; i < mBIN.cols(); i++) {
+            if(leftFlag && Core.sumElems(mBIN.col(i)).val[0] > 50) {
+                stopColLeft = i;
+                leftFlag = false;
+                rightFlag = true;
+            } else if (rightFlag && Core.sumElems(mBIN.col(i)).val[0] < 50) {
+                stopColRight = i;
+                rightFlag = false;
+            }
+        }
+
+        divider = (int)(((stopColRight - stopColLeft)*(2 - 1.412))/4);
+        centered = true;
+    }
+
+    /**
+     * Method that removes the black space that naturally occurs in a microscope image and crops the image into a square
+     */
+    public void removeBlackSpace() {
+        if(!centered) defineBoundaries();
+
+        try {
+            mRET = mRGBAT.submat(new Rect(stopColLeft + divider, stopRowTop + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider));
+            System.out.println("Correct centering");
+        } catch (CvException e) {
+            mRET = mRGBAT;
+            System.out.println(e);
+        }
     }
 
     /**

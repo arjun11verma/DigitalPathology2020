@@ -41,69 +41,7 @@ public class Task extends TimerTask {
      */
     @Override
     public void run() {
-        mRGBA = activity.getBaseFrame().rgba();
-        mRGBAT = mRGBA.t();
-        Core.flip(mRGBA.t(), mRGBAT, 1);
-        removeBlackSpace();
-        if(true) activity.addMat(mRET);
-    }
-
-    /**
-     * Defines the black space boundaries of the image
-     */
-    private void defineBoundaries() {
-        topFlag = true;
-        leftFlag = true;
-        bottomFlag = false;
-        rightFlag = false;
-        stopRowTop = 0;
-        stopRowBottom = mRGBAT.rows();
-        stopColLeft = 0;
-        stopColRight = mRGBAT.cols();
-
-        Imgproc.cvtColor(mRGBAT, mGRAY, Imgproc.COLOR_BGR2GRAY);
-
-        Imgproc.threshold(mGRAY, mBIN, 50, 5, Imgproc.THRESH_BINARY);
-
-        for(int i = 0; i < mBIN.rows(); i++) {
-            if(topFlag && Core.sumElems(mBIN.row(i)).val[0] > 50) {
-                stopRowTop = i;
-                topFlag = false;
-                bottomFlag = true;
-            } else if (bottomFlag && Core.sumElems(mBIN.row(i)).val[0] < 50) {
-                stopRowBottom = i;
-                bottomFlag = false;
-            }
-        }
-
-        for(int i = 0; i < mBIN.cols(); i++) {
-            if(leftFlag && Core.sumElems(mBIN.col(i)).val[0] > 50) {
-                stopColLeft = i;
-                leftFlag = false;
-                rightFlag = true;
-            } else if (rightFlag && Core.sumElems(mBIN.col(i)).val[0] < 50) {
-                stopColRight = i;
-                rightFlag = false;
-            }
-        }
-
-        divider = (int)(((stopColRight - stopColLeft)*(2 - 1.412))/4);
-        centered = true;
-    }
-
-    /**
-     * Method that removes the black space that naturally occurs in a microscope image and crops the image into a square
-     */
-    public void removeBlackSpace() {
-        if(!centered) defineBoundaries();
-
-        try {
-            mRET = mRGBAT.submat(new Rect(stopColLeft + divider, stopRowTop + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider));
-            System.out.println("Correct centering");
-        } catch (CvException e) {
-            mRET = mRGBAT;
-            System.out.println(e);
-        }
+        activity.imageReady = true;
     }
 
     public void resetCentered() {

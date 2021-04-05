@@ -69,6 +69,7 @@ public class AfterCaptureView extends BaseView implements ServerUploadable {
     public void addImagesToDisplay(List<Mat> matList, LinearLayout imageLayout) {
         for (int i = 0; i < matList.size(); i++) {
             bitArr[i] = (toBitmap(activity.getMatList().get(i)));
+            System.out.println(activity.getMatList().get(i).size());
             ImageView view = new ImageView(activity);
             view.setImageBitmap(bitArr[i]);
             view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,

@@ -12,6 +12,7 @@ import android.view.View;
 
 import com.example.digitalpath2020.R;
 
+import org.opencv.android.JavaCamera2View;
 import org.opencv.android.JavaCameraView;
 
 public class MainView extends BaseView {
@@ -26,7 +27,7 @@ public class MainView extends BaseView {
 
         checkLoggedIn(false);
 
-        activity.activateCamera((JavaCameraView) activity.findViewById(R.id.camera));
+        activity.activateCamera((JavaCamera2View) activity.findViewById(R.id.camera));
 
         activity.findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
