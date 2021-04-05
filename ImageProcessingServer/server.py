@@ -43,9 +43,8 @@ def uploadImage():
    if (post_data['status'] == "Y"):
       previous_image_set = images.find({'name': slide_id})
 
-      mongo_id = None
-      mongo_id = images.insert_one(held_images[slide_id])
-      
+      image_document = held_images.get(slide_id, None)
+      mongo_id = images.insert_one(image_document) if image_document else None
       print(mongo_id)
 
       if mongo_id: 

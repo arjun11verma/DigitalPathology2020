@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onCreate(savedInstanceState);
         initDB();
         serverConnection = new ServerConnect(this);
-        changeView(new MainView(this, R.layout.activity_main));
+        changeView(new LoginView(this, R.layout.login_activity));
     }
 
     /**
@@ -141,8 +141,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             matList.clear();
             timer = new Timer();
             timerTask = new Task(this, currentView);
-            timerTask.resetCentered();
             timer.schedule(timerTask, delay, period);
+            resetCentered();
             cameraView.enableView();
 
             clicked = true;
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         try {
             timer.cancel(); // stops the timer
             timer.purge(); // makes the timertask stop occuring
-            onDestroy();
+            cameraView.disableView();
         } catch (NullPointerException nullException) {
             System.out.println(nullException);
         }
@@ -209,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      */
     public void resetClick() {
         matList.clear();
+        resetCentered();
         clicked = false;
     }
 
@@ -411,5 +412,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public String getDevServerUrl() {
         return devServerUrl;
+    }
+
+    public void resetCentered() {
+        centered = false;
     }
 }
