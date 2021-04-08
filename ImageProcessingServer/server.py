@@ -1,4 +1,5 @@
 import json
+import os
 from ast import literal_eval
 from bson import ObjectId
 
@@ -10,6 +11,7 @@ from flask_cors import CORS, cross_origin
 from flask_pymongo import PyMongo
 from flask_ngrok import run_with_ngrok
 
+from ImageStichAlgorithm.mitosisDetection import mitosisProb
 from ImageStichAlgorithm.ImageProcessor import ImageProcessor
 from APIKEYS import MONGODB_KEY
 
@@ -18,6 +20,7 @@ from APIKEYS import MONGODB_KEY
 # Improve post processing (sharpening, brightness, various other kernels and whatnot)
 
 # Finalize slide image acquisition process (lots of potential to make it more efficient as well)
+from driver import base_file_name
 
 app = Flask(__name__)
 
@@ -54,9 +57,11 @@ def acceptImages():
    slide_type = post_data['slide']
    cancer_type = post_data['cancer']
    time_stamp = (datetime.now()).strftime("%m/%d/%Y %H:%M:%S")
+
    stitched_image = imgproc.arrayToBase64(slide_image)
 
    if(len(slide_image) >= 1000):
+      mitosisProb()
       mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
       print(images.insert_one(mongo_document).inserted_id)
       return {'response': "Data posted successfully!"}
@@ -79,6 +84,13 @@ def displayImages():
       img_data_new.append(str(img["image"], 'utf-8'))
 
    return {"image_list": img_data_new}
+
+@app.route('/getMitosisProb', methods = ['GET'])
+def getMitosisProb():
+   username = request.args.get('username')
+   data = list(images.find({"username": username}))
+   probs = mitosisProb('stitchedImage2.png')
+   return {'probs': probs.tolist()}
 
 def partialStitching(imgproc, img_list):
    """Stitches together images in chunks then stiches the chunks together. This algorithm is typically less effective than regular stitching."""

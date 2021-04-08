@@ -26,6 +26,7 @@ function App() {
         <Route exact path="/Homepage/:id" component={Home} />
         <Route exact path="/Homepage/:id/PathPortal" component={PathPortal} />
         <Route exact path="/Homepage/:id/ImageView/:id" component={ImageView} />
+        <Route exact path="/Homepage/:id/ImageView/:id/mitosisProb" componenet></Route>
         <Route exact path="/CreateAccount" component={CreateAccount} />
       </Switch>
     </BrowserRouter>

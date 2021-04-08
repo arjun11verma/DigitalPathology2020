@@ -1,7 +1,6 @@
 # uses API from https://github.com/IBM/MAX-Breast-Cancer-Mitosis-Detector
 # to set up the mitosis detection server on localhost:5000, run the following docker command:
-# docker run -it -p 5000:5000 max-breast-cancer-mitosis-detector
-from typing import Any
+# docker run -it -p 5000:5000 quay.io/codait/max-breast-cancer-mitosis-detector
 import os
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
