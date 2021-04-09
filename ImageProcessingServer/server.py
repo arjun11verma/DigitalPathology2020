@@ -1,7 +1,9 @@
 import json
 import os
 from ast import literal_eval
+import bson
 from bson import ObjectId
+import base64
 
 from datetime import datetime
 
@@ -10,6 +12,7 @@ from flask import request
 from flask_cors import CORS, cross_origin
 from flask_pymongo import PyMongo
 from flask_ngrok import run_with_ngrok
+import cv2
 
 from ImageStichAlgorithm.mitosisDetection import mitosisProb
 from ImageStichAlgorithm.ImageProcessor import ImageProcessor
@@ -61,7 +64,6 @@ def acceptImages():
    stitched_image = imgproc.arrayToBase64(slide_image)
 
    if(len(slide_image) >= 1000):
-      mitosisProb()
       mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
       print(images.insert_one(mongo_document).inserted_id)
       return {'response': "Data posted successfully!"}
@@ -88,9 +90,18 @@ def displayImages():
 @app.route('/getMitosisProb', methods = ['GET'])
 def getMitosisProb():
    username = request.args.get('username')
-   data = list(images.find({"username": username}))
-   probs = mitosisProb('stitchedImage2.png')
-   return {'probs': probs.tolist()}
+   imgName = request.args.get('name')
+   document = images.find_one_or_404({'username': username, 'name': imgName})
+   imgByteStr = document["image"]
+   imgDecoded = imgproc.base64ToArray(imgByteStr)
+   imgPath = os.path.join(base_file_name, 'mitosisProbImg.png')
+   cv2.imwrite(imgPath, imgDecoded)
+   probs = mitosisProb(imgPath)
+   try:
+      os.remove(imgPath)
+   except:
+      print("Could not remove image at: " + imgPath)
+   return {'probs': probs.tolist(), 'regionWidth': 64, 'regionHeight': 64}
 
 def partialStitching(imgproc, img_list):
    """Stitches together images in chunks then stiches the chunks together. This algorithm is typically less effective than regular stitching."""
@@ -123,7 +134,7 @@ def partialStitching(imgproc, img_list):
    print("Partial stitching over!")
 
    return slide_image
-
+app.debug = True
 run_with_ngrok(app) # Configures the server with Ngrok, a localhost tunneling service that allows my phone to send data to an instance of the server running on a computer
 app.run() # Runs the server
 

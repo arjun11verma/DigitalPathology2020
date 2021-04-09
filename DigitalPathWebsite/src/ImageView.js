@@ -14,6 +14,9 @@ import gql from 'graphql-tag';
 import axios from 'axios';
 import {server_url} from 'axios';
 import { check } from './Backend/Database';
+import ImageMapper from 'react-image-mapper';
+
+const imgProcServerURL = 'http://127.0.0.1:5000';
 
 /**
  * Inner class for displaying the image
@@ -26,9 +29,12 @@ class ImageViewCard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
+            mitosisData: props.mitosisData,
+            hoveredArea: null
         };
     }
+
+
 
     /**
      * Renders the Image UI Component
@@ -36,12 +42,59 @@ class ImageViewCard extends Component {
     render() {
         return (
             <div>
-                <Zoom style = {{height: 600}}>
-                    <img alt="Slide" src={this.props.src} style={{ width: "50vw", height: 600}} />
-                </Zoom>
+                {/* <Zoom style = {{height: 600}}> */}
+                    {/* tooltip code is from https://coldiary.github.io/react-image-mapper/ */}
+                    <ImageMapper 
+                        src = {this.props.src}
+                        height = {600}
+                        strokeColor = {"rgba(255,0,0)"}
+                        map = {this.makeInteractiveMap(this.state.mitosisData)}>
+                        onMouseEnter={area => this.enterArea(area)}
+                        onMouseLeave={area => this.leaveArea(area)}
+                    </ImageMapper>
+                    {
+                    this.state.hoveredArea &&
+                    <span className="tooltip"
+                        style={{ ...this.getTipPosition(this.state.hoveredArea)}}>
+                        { this.state.hoveredArea && this.state.hoveredArea.name}
+                    </span>
+                    }        
+                    {/* <img alt="Slide" src={this.props.src} style={{ width: "50vw", height: 600}} /> */}
+                {/* </Zoom> */}
             </div>
         );
     }
+
+    makeInteractiveMap(mitosisData) {
+        let areas = []
+        let width = mitosisData.regionWidth;
+        let height = mitosisData.regionHeight;
+        let probs = mitosisData.probs;
+        for (let row = 0; row < probs.length - 1; row++) {
+            for (let col = 0; col < probs[row].length - 1; col++) {
+                let coords = [width * col, height * row, width * (col + 1), height * (row + 1)]
+                let shape = "rect"
+                let name = "Mitosis Prob: " + probs[row][col];
+                areas.push({coords, name, shape})
+            }
+        }
+        
+        let map = {name: 'mitosisProbs', areas: areas};
+        return map;
+    }
+
+    enterArea(area) {
+        this.setState({ hoveredArea: area });
+    }
+    
+    leaveArea(area) {
+        this.setState({ hoveredArea: null });
+    }
+    
+    getTipPosition(area) {
+        return { top: `${area.center[1]}px`, left: `${area.center[0]}px` };
+    }
+    
 }
 
 const url_list = document.location.href.split('/');
@@ -57,6 +110,7 @@ class ImageView extends Component {
         super(props);
         this.state = {
             imageData: null,
+            imageName: null,
             objectId: url_list[url_list.length - 1],
             emailUser: null,
             nameUser: null,
@@ -89,15 +143,17 @@ class ImageView extends Component {
                 }
             }`,
             variables: { _id: this.state.objectId }
-        }).then((res) => {
-            const image = this.processImages(res.data.imageSet.image);
+        }).then(async (res) => {
             const diagnosis = res.data.imageSet.diagnosis;
             this.setState({
-                imageData: image,
                 emailUser: res.data.imageSet.username,
-                nameUser: res.data.imageSet.name
+                nameUser: res.data.imageSet.name,
+                imageName: res.data.imageSet.name
             });
-
+            const image = await this.processImages(res.data.imageSet.image);
+            this.setState({
+                imageData: image
+            })
             if (diagnosis !== "N") {
                 this.setState({
                     determineDiagnosis: <Typography style={{ marginLeft: 10, fontFamily: "Garamond" }}>{("Former Diagnosis: " + diagnosis)}</Typography>,
@@ -126,8 +182,24 @@ class ImageView extends Component {
      * Creates an ImageView Component from the given image data
      * @param {String} imgData 
      */
-    processImages = (imgData) => {
-        return <ImageViewCard alt="Slide" src={"data:image/jpeg;base64," + imgData} />;
+    processImages = async (imgData) => {
+        let mitosisResp = await this.getMitosisProb(this.state.emailUser, this.state.imageName);
+        let mitosisData = mitosisResp.data;
+        return <ImageViewCard alt="Slide" src={"data:image/jpeg;base64," + imgData } mitosisData={mitosisData} />;
+    }
+
+    /**
+     * 
+     * @param {String} username the username which may have access to the given image
+     * @param {String} imgName 
+     */
+    getMitosisProb = async (username, imgName) => {
+        return axios.get(imgProcServerURL + '/getMitosisProb', {
+            params: {
+                username: username,
+                name: imgName
+            }
+        });
     }
 
     /**
