@@ -8,6 +8,7 @@ from typing import List
 import requests as req
 import numpy as np
 import cv2
+from decimal import Decimal
 
 port = 5000
 currDir = os.getcwd()
@@ -36,8 +37,8 @@ def mitosisProb(stitchedFilePath: str) -> List[List[float]]:
             croppedPath = os.path.join(analyisPath, croppedFileName)
             # writes the cropped image into the analysis folder
             cv2.imwrite(croppedPath, croppedImg)
-            prob = croppedMitosisProb(croppedPath)
-            mitosisProbGrid[x][y] = prob
+            prob = Decimal(croppedMitosisProb(croppedPath))
+            mitosisProbGrid[x][y] = round(prob, 8)
             try:
                 os.remove(croppedPath)
             except:

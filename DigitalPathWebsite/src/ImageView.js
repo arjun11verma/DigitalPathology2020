@@ -5,8 +5,8 @@
  */
 
 import React, { Component } from 'react';
-import Zoom from 'react-medium-image-zoom'
-import 'react-medium-image-zoom/dist/styles.css'
+import Zoom from 'react-medium-image-zoom';
+import 'react-medium-image-zoom/dist/styles.css';
 import { Paper, Grid, Typography, AppBar, TextareaAutosize, Button } from '@material-ui/core';
 
 import { apolloClient } from './Backend/ApolloClient';
@@ -15,6 +15,7 @@ import axios from 'axios';
 import {server_url} from 'axios';
 import { check } from './Backend/Database';
 import ImageMapper from 'react-image-mapper';
+import './tooltip.css'
 
 const imgProcServerURL = 'http://127.0.0.1:5000';
 
@@ -30,7 +31,9 @@ class ImageViewCard extends Component {
         super(props);
         this.state = {
             mitosisData: props.mitosisData,
-            hoveredArea: null
+            hoveredArea: null,
+            displayMitosis: false,
+            imgHeight: 600
         };
     }
 
@@ -40,29 +43,59 @@ class ImageViewCard extends Component {
      * Renders the Image UI Component
      */
     render() {
+        let image = null;
+        if (this.state.displayMitosis) {
+            image = this.renderMitosisMap();
+        } else {
+            image = this.renderZoomImage();
+        }
         return (
-            <div>
-                {/* <Zoom style = {{height: 600}}> */}
-                    {/* tooltip code is from https://coldiary.github.io/react-image-mapper/ */}
-                    <ImageMapper 
-                        src = {this.props.src}
+            <div classname = "container">
+                {image}
+                <Button onClick={this.toggleMitosis} style={{ fontFamily: "Garamond", marginLeft: 10 }}>
+                    {this.state.displayMitosis ? 'Disable Mitosis Overlay': 'Enable Mitosis Overlay'}
+                </Button>
+
+            </div>
+        )
+    }
+
+    renderZoomImage() {
+        return (
+            <Zoom style = {{height: this.state.imgHeight}}>
+                <img alt="Slide" src={this.props.src} style={{ width: "50vw", height: 600}} />
+            </Zoom>
+        );
+    }
+
+    renderMitosisMap() {
+        return (
+                <div style={{ position: "relative" }}>
+                    <ImageMapper
+                        src={this.props.src}
+                        map={this.makeInteractiveMap(this.state.mitosisData)}
                         height = {600}
-                        strokeColor = {"rgba(255,0,0)"}
-                        map = {this.makeInteractiveMap(this.state.mitosisData)}>
                         onMouseEnter={area => this.enterArea(area)}
                         onMouseLeave={area => this.leaveArea(area)}
-                    </ImageMapper>
-                    {
-                    this.state.hoveredArea &&
-                    <span className="tooltip"
-                        style={{ ...this.getTipPosition(this.state.hoveredArea)}}>
-                        { this.state.hoveredArea && this.state.hoveredArea.name}
-                    </span>
-                    }        
-                    {/* <img alt="Slide" src={this.props.src} style={{ width: "50vw", height: 600}} /> */}
-                {/* </Zoom> */}
-            </div>
+                        lineWidth={1}
+                        strokeColor={"red"}
+                    />
+                    {this.state.hoveredArea && (
+                        <span
+                            className="tooltip"
+                            style={{ ...this.getTipPosition(this.state.hoveredArea) }}
+                        >
+                            {this.state.hoveredArea && this.state.hoveredArea.name}
+                        </span>
+                    )}
+                </div>   
         );
+    }
+
+    toggleMitosis = () => {
+        this.setState({
+            displayMitosis: !this.state.displayMitosis
+        });
     }
 
     makeInteractiveMap(mitosisData) {
@@ -75,7 +108,7 @@ class ImageViewCard extends Component {
                 let coords = [width * col, height * row, width * (col + 1), height * (row + 1)]
                 let shape = "rect"
                 let name = "Mitosis Prob: " + probs[row][col];
-                areas.push({coords, name, shape})
+                areas.push({name: name, coords: coords, shape: shape})
             }
         }
         
@@ -83,17 +116,31 @@ class ImageViewCard extends Component {
         return map;
     }
 
-    enterArea(area) {
-        this.setState({ hoveredArea: area });
-    }
-    
-    leaveArea(area) {
-        this.setState({ hoveredArea: null });
-    }
-    
-    getTipPosition(area) {
-        return { top: `${area.center[1]}px`, left: `${area.center[0]}px` };
-    }
+    getInitialState() {
+		return { hoveredArea: null, msg: null, moveMsg: null };
+	}
+
+	
+	enterArea(area) {
+		this.setState({
+			hoveredArea: area
+		});
+	}
+
+	leaveArea(area) {
+		this.setState({
+			hoveredArea: null
+		});
+	}
+
+	getTipPosition(area) {
+        let yOffset = 50;
+        if (area.center[1] < this.state.imgHeight - yOffset) {
+            return { top: `${area.center[1] + yOffset}px`, left: `${area.center[0]}px` };
+        } else {
+            return { top: `${area.center[1] - yOffset}px`, left: `${area.center[0]}px` };
+        }
+	}
     
 }
 
