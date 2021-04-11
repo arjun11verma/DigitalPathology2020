@@ -44,7 +44,7 @@ class ImageViewCard extends Component {
      */
     render() {
         let image = null;
-        if (this.state.displayMitosis) {
+        if (this.state.displayMitosis && this.state.mitosisData) {
             image = this.renderMitosisMap();
         } else {
             image = this.renderZoomImage();
@@ -74,6 +74,7 @@ class ImageViewCard extends Component {
                     <ImageMapper
                         src={this.props.src}
                         map={this.makeInteractiveMap(this.state.mitosisData)}
+                        alt = "Slide"
                         height = {600}
                         onMouseEnter={area => this.enterArea(area)}
                         onMouseLeave={area => this.leaveArea(area)}
@@ -187,6 +188,7 @@ class ImageView extends Component {
                     username
                     diagnosis
                     name
+                    mitosisData
                 }
             }`,
             variables: { _id: this.state.objectId }
@@ -197,7 +199,7 @@ class ImageView extends Component {
                 nameUser: res.data.imageSet.name,
                 imageName: res.data.imageSet.name
             });
-            const image = await this.processImages(res.data.imageSet.image);
+            const image = this.processImages(res.data.imageSet.image, res.data.mitosisData);
             this.setState({
                 imageData: image
             })
@@ -229,10 +231,8 @@ class ImageView extends Component {
      * Creates an ImageView Component from the given image data
      * @param {String} imgData 
      */
-    processImages = async (imgData) => {
-        let mitosisResp = await this.getMitosisProb(this.state.emailUser, this.state.imageName);
-        let mitosisData = mitosisResp.data;
-        return <ImageViewCard alt="Slide" src={"data:image/jpeg;base64," + imgData } mitosisData={mitosisData} />;
+    processImages = (imgData, mitosisData) => {
+        return <ImageViewCard alt="Slide" src={"data:image/jpeg;base64," + imgData } mitosisData={this.state.mitosisData} />;
     }
 
     /**

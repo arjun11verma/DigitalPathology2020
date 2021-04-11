@@ -60,11 +60,13 @@ def acceptImages():
    slide_type = post_data['slide']
    cancer_type = post_data['cancer']
    time_stamp = (datetime.now()).strftime("%m/%d/%Y %H:%M:%S")
-
    stitched_image = imgproc.arrayToBase64(slide_image)
 
    if(len(slide_image) >= 1000):
-      mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type, 'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N"}
+      mitosisData = calcMitosisData(slide_image)
+      mongo_document = {'username': username, 'name': name, 'slide': slide_type, 'cancer': cancer_type,
+                        'timestamp': time_stamp, 'image': stitched_image, 'diagnosis': "N",
+                        'mitosisData': mitosisData}
       print(images.insert_one(mongo_document).inserted_id)
       return {'response': "Data posted successfully!"}
    
@@ -97,6 +99,20 @@ def getMitosisProb():
    imgPath = os.path.join(base_file_name, 'mitosisProbImg.png')
    cv2.imwrite(imgPath, imgDecoded)
    probs = mitosisProb(imgPath)
+   try:
+      os.remove(imgPath)
+   except:
+      print("Could not remove image at: " + imgPath)
+   return {'probs': probs.tolist(), 'regionWidth': 64, 'regionHeight': 64}
+
+
+def calcMitosisData(imgArray):
+   imgPath = os.path.join(base_file_name, 'mitosisProbImg.png')
+   cv2.imwrite(imgPath, imgArray)
+   try:
+      probs = mitosisProb(imgPath)
+   except:
+      return None
    try:
       os.remove(imgPath)
    except:
