@@ -50,11 +50,13 @@ class ImageViewCard extends Component {
             image = this.renderZoomImage();
         }
         return (
-            <div classname = "container">
+            <div class = "container">
                 {image}
+                {this.state.mitosisData && 
                 <Button onClick={this.toggleMitosis} style={{ fontFamily: "Garamond", marginLeft: 10 }}>
                     {this.state.displayMitosis ? 'Disable Mitosis Overlay': 'Enable Mitosis Overlay'}
                 </Button>
+                }
 
             </div>
         )
@@ -188,7 +190,11 @@ class ImageView extends Component {
                     username
                     diagnosis
                     name
-                    mitosisData
+                    mitosisData {
+                        probs
+                        regionWidth
+                        regionHeight
+                    }
                 }
             }`,
             variables: { _id: this.state.objectId }

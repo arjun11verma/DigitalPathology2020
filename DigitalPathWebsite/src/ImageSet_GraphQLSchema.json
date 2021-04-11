@@ -1,0 +1,49 @@
+{
+  "title": "ImageSet",
+  "required": [
+    "username"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "objectId"
+    },
+    "cancer": {
+      "bsonType": "string"
+    },
+    "image": {
+      "bsonType": "string"
+    },
+    "name": {
+      "bsonType": "string"
+    },
+    "slide": {
+      "bsonType": "string"
+    },
+    "timestamp": {
+      "bsonType": "string"
+    },
+    "username": {
+      "bsonType": "string"
+    },
+    "diagnosis": {
+      "bsonType": "string"
+    },
+    "mitosisData": {
+      "bsonType": "object",
+      "properties": {
+        "probs": {
+          "bsonType": "array",
+          "items": {
+            "bsonType": "double"
+          }
+        },
+        "regionWidth": {
+          "bsonType": "int"
+        },
+        "regionHeight": {
+          "bsonType": "int"
+        }
+      }
+    }
+  }
+}
