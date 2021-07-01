@@ -268,7 +268,7 @@ public class JavaCamera2View extends CameraBridgeViewBase {
                 int w = sz.getWidth(), h = sz.getHeight();
                 Log.d(LOGTAG, "trying size: " + w + "x" + h);
                 if (width >= w && height >= h && bestWidth <= w && bestHeight <= h
-                        && Math.abs(aspect - (float) w / h) < 0.2) {
+                        && Math.abs(aspect - (float) w / h) == 0) {
                     bestWidth = w;
                     bestHeight = h;
                 }

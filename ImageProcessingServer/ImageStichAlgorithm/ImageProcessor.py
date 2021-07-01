@@ -8,17 +8,9 @@ def crop(img_arr, top, left, bottom, right):
 
 class ImageProcessor:
     """Image processing class for converting image formats, stitching images together, applying filters and removing black space from microscope images"""
-    stitcher = cv2.Stitcher.create()
 
     def __init__(self):
-        self.num_images = 0
-        self.stopRowTop = 0
-        self.stopColLeft = 0
-        self.stopRowBottom = 0
-        self.stopColRight = 0
-        self.processed = False
-        self.divider = 0
-        self.inner_len = 0
+        self.stitcher = cv2.Stitcher.create()
         """Intializer for the class"""
 
     def combineImages(self, image_list):
@@ -34,8 +26,8 @@ class ImageProcessor:
         cv2.imshow("Slide Image", slide_image)
         cv2.waitKey(0)
 
-    def removeBlackSpace(self, img_url, img_name, save_image):
-        """Converts an image to Numpy and saves it if the option is selected. Removes black space around microscope image if neccessary"""
+    def recordImage(self, img_url, img_name, save_image):
+        """Converts an image to Numpy and saves it if the option is selected."""
         if(isinstance(img_url, str)):
             slide_image = cv2.imread(img_url)
         else:
@@ -51,8 +43,7 @@ class ImageProcessor:
     
     def twoDimConvolution(self, slide_image, kernel):
         """Performs a 2D Convlution on the image"""
-        new_img = cv2.filter2D(slide_image, -1, kernel)
-        return new_img
+        return cv2.filter2D(slide_image, -1, kernel)
     
     def removeNoise(self, img_data):
         pass
@@ -76,7 +67,7 @@ class ImageProcessor:
 
     def stitchImages(self, slides):
         """Stitches together an array of images using the OpenCV Panorama stitcher"""
-        (status, result) = ImageProcessor.stitcher.stitch(slides)
+        (status, result) = self.stitcher.stitch(slides)
 
         if(status == cv2.STITCHER_OK):
             return result
@@ -91,6 +82,11 @@ class ImageProcessor:
 
         return img
     
+    def arrayToJPEG(self, img_data):
+        """Converts an image from a Numpy array to a JPEG buffer"""
+        result, jpeg_data = cv2.imencode('.jpg', img_data, [cv2.IMWRITE_JPEG_QUALITY, 95])
+        return jpeg_data if result else None
+    
     def arrayToBase64(self, img_data):
         """Converts an image from a Numpy array to Base64"""
         success, img_data = cv2.imencode(".jpg", img_data)
@@ -104,54 +100,3 @@ class ImageProcessor:
         byte_list = base64.b64encode(byte_list)
 
         return str(byte_list, 'utf-8')
-    
-    def pythonRemoveBlackSpace(self, slide_image): 
-        """Removes the black space from a microscope slide image"""
-        limit = 10
-
-        bin_img = cv2.cvtColor(slide_image, cv2.COLOR_BGR2GRAY)
-
-        threshold, bin_img = cv2.threshold(bin_img, limit, 1, cv2.THRESH_BINARY)
-
-        if(not self.processed):
-            self.stopRowTop = 0
-            topFlag = True
-            self.stopColLeft = 0
-            leftFlag = True
-            self.stopRowBottom = len(slide_image)
-            bottomFlag = False
-            self.stopColRight = len(slide_image[0])
-            rightFlag = False
-
-            for row in range(len(bin_img)):
-                if(topFlag and sum(bin_img[row]) > 50):
-                    self.stopRowTop = row
-                    topFlag = False
-                    bottomFlag = True
-                elif(bottomFlag and sum(bin_img[row]) < 10):
-                    self.stopRowBottom = row
-                    bottomFlag = False
-
-                if(leftFlag and sum(bin_img[:, row]) > 50):
-                    self.stopColLeft = row
-                    leftFlag = False
-                    rightFlag = True
-                elif(rightFlag and sum(bin_img[:, row]) < 10):
-                    self.stopColRight = row
-                    rightFlag = False
-
-                if(not(leftFlag or rightFlag or topFlag or bottomFlag)):
-                    break
-            
-            self.inner_len = ((self.stopColRight - self.stopColLeft)*(1.4142))/2
-            divider = ((self.stopRowBottom - self.stopRowTop) - self.inner_len)/2
-            self.divider = int(divider)
-
-            self.processed = True
-
-        new_image = crop(slide_image, self.stopRowTop, self.stopColLeft,
-                            self.stopRowBottom, self.stopColRight)
-
-        new_image = crop(new_image, self.divider, self.divider, self.divider + int(self.inner_len), self.divider + int(self.inner_len))
-
-        return new_image

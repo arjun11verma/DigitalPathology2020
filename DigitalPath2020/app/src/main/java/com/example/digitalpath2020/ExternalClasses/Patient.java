@@ -3,13 +3,13 @@ package com.example.digitalpath2020.ExternalClasses;
 public class Patient {
     private String slide;
     private String cancer;
-    private String name;
+    private String slideID;
     private String username;
 
-    public Patient(String slide, String cancer, String name, String username) {
+    public Patient(String slide, String cancer, String slideID, String username) {
         this.slide = slide;
         this.cancer = cancer;
-        this.name = name;
+        this.slideID = slideID;
         this.username = username;
     }
 
@@ -33,12 +33,12 @@ public class Patient {
         this.cancer = cancer;
     }
 
-    public String getName() {
-        return name;
+    public String getSlideID() {
+        return slideID;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSlideID(String slideID) {
+        this.slideID = slideID;
     }
 
     public String getUsername() {

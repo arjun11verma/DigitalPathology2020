@@ -1,5 +1,6 @@
 /**
  * This is a class for the connection to the Python server
+ *
  * @author Arjun Verma
  * @version 1.0
  */
@@ -16,8 +17,8 @@ import com.android.volley.toolbox.Volley;
 import com.example.digitalpath2020.MainActivity;
 import com.example.digitalpath2020.R;
 import com.example.digitalpath2020.Views.ConfirmCameraView;
-import com.example.digitalpath2020.Views.FinalUploadView;
 import com.example.digitalpath2020.Views.PostUploadView;
+import com.example.digitalpath2020.Views.UploadView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,12 +26,11 @@ import org.json.JSONObject;
 public class ServerConnect {
     private RequestQueue queue; // Volley request queue
     private String serverUrl; // Server url
-    private MainActivity activity; // Instance of the main activity     
-    private boolean done = false; // Boolean representing whether the call was made
-    private boolean success = true; // Boolean representing whether the call was a success
+    private MainActivity activity; // Instance of the main activity
 
     /**
      * Constructor for the ServerConnect class
+     *
      * @param activity Instance of the main activity
      */
     public ServerConnect(MainActivity activity) {
@@ -41,42 +41,38 @@ public class ServerConnect {
     /**
      * Makes a post to the Python server using the Android Volley library
      * Determines whether to the post was successful or not
+     *
      * @param postObject JSON object to be sent to the server
      */
     public void sendImages(JSONObject postObject) {
-        if(!done) {
-            String postUrl = serverUrl + "/acceptImages";
+        String postUrl = "https://" + serverUrl + ".ngrok.io" + "/acceptImages";
 
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    try {
-                        String stitchedData =  (String) response.get("imageData");
-                        if((response.get("response")).equals("N")) {
-                            activity.changeView(new PostUploadView(activity, R.layout.post_upload_activity, "Your stitching was NOT successful, please try again.", null));
-                        } else {
-                            activity.changeView(new PostUploadView(activity, R.layout.post_upload_activity, "Your stitching was successful! If you think this image is valid, upload it. Otherwise, please take more slide images to generate another stitch.", stitchedData));
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, postUrl, postObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    activity.setImageCurrentTime(response.getString("timeStamp"));
+                    if ((response.getString("response")).equals("N")) {
+                        activity.changeView(new UploadView(activity, R.layout.post_upload_activity, "Your stitching was NOT successful, please try again.", null));
+                    } else {
+                        activity.changeView(new UploadView(activity, R.layout.post_upload_activity, "Your stitching was successful! If you think this image is valid, upload it. Otherwise, please take more slide images to generate another stitch.", (String) response.get("imageData")));
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    activity.changeView(new PostUploadView(activity, R.layout.post_upload_activity, "Your upload was NOT successful, please try again.", null));
-                    success = false;
-                    System.out.println(error);
-                }
-            });
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                activity.changeView(new UploadView(activity, R.layout.post_upload_activity, "Your upload was NOT successful, please try again.", null));
+                System.out.println(error);
+            }
+        });
 
-            request.setRetryPolicy(new DefaultRetryPolicy(600000,
-                    0,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-            queue.add(request);
-
-            done = true;
-        }
+        request.setRetryPolicy(new DefaultRetryPolicy(600000,
+                0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(request);
     }
 
     public void sendUpload(final JSONObject postObject) {
@@ -96,7 +92,7 @@ public class ServerConnect {
 
                 try {
                     if (postObject.get("status").equals("Y")) {
-                        activity.changeView(new FinalUploadView(activity, R.layout.final_upload_activity,"Your image was uploaded " + returnString + ". You can either logout or choose to take more slide images"));
+                        activity.changeView(new PostUploadView(activity, R.layout.final_upload_activity, "Your image was uploaded " + returnString + ". You can either logout or choose to take more slide images"));
                     } else {
                         activity.getMatList().clear();
                         activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
@@ -110,7 +106,7 @@ public class ServerConnect {
             public void onErrorResponse(VolleyError error) {
                 try {
                     if (postObject.get("status").equals("Y")) {
-                        activity.changeView(new FinalUploadView(activity, R.layout.final_upload_activity,"Your image was uploaded unsuccessfully. You can either logout or choose to take more slide images"));
+                        activity.changeView(new PostUploadView(activity, R.layout.final_upload_activity, "Your image was uploaded unsuccessfully. You can either logout or choose to take more slide images"));
                     } else {
                         activity.getMatList().clear();
                         activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
@@ -129,18 +125,11 @@ public class ServerConnect {
     }
 
     // Getters and setters for the fields
-
-    public boolean getDone() {
-        return done;
-    }
-
-    public void setDone() {
-        done = false;
-    }
-
-    public boolean getSuccess() { return success; }
-
     public void setServerUrl(String serverUrl) {
-        this.serverUrl = "https://" + serverUrl + ".ngrok.io";
+        this.serverUrl = serverUrl;
+    }
+
+    public String getServerUrl() {
+        return serverUrl;
     }
 }

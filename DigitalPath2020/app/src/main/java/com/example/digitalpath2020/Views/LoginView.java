@@ -31,7 +31,6 @@ public class LoginView extends BaseView implements FormFillable {
      */
     public LoginView(Context context, int layout) {
         super(context, layout);
-
         checkLoggedIn(true);
 
         usernameText = activity.findViewById(R.id.username);

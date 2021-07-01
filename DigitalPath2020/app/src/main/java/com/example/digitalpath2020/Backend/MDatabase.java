@@ -1,5 +1,6 @@
 /**
  * This is a class for the MongoDB database connection
+ *
  * @author Arjun Verma
  * @version 1.0
  */
@@ -48,10 +49,6 @@ public class MDatabase extends Application {
     }
 
     // Getters for the fields
-
-    public Realm getRealm() {
-        return realm;
-    }
 
     public App getTaskApp() {
         return taskApp;

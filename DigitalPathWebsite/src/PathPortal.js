@@ -24,7 +24,7 @@ class SlideView extends Component {
     }
 
     showImage = () => {
-        document.location.href = ('./ImageView/' + this.props.id);
+        document.location.href = ('./ImageView/' + this.props.username + '/' + this.props.slide_id + '/' + this.props.id);
     }
 
     render() {
@@ -69,9 +69,9 @@ class PathPortal extends Component {
      * @param {String} id Id of the image
      * @param {String} diagnosis Diagnosis status
      */
-    makeSlideBox = (slide, cancer, date, id, diagnosis) => {
+    makeSlideBox = (slide, cancer, date, id, diagnosis, slide_id, username) => {
         return (
-            <SlideView slide={slide} cancer={cancer} date={date.split(" ")[0]} id={id} diagnosis={diagnosis} />
+            <SlideView slide={slide} cancer={cancer} date={date.split(" ")[0]} id={id} diagnosis={diagnosis} slide_id = {slide_id} username = {username}/>
         )
     }
 
@@ -115,6 +115,8 @@ class PathPortal extends Component {
                     timestamp
                     _id
                     diagnosis
+                    slide_id
+                    username
                 }
             }`
         }).then((res) => {
@@ -128,22 +130,22 @@ class PathPortal extends Component {
                     addUndiagnosed = true;
                     for (var i = 0; i < undiagnosedSlides.length; i++) {
                         if (this.compareDate(data.timestamp, undiagnosedSlides[i].props.date)) {
-                            undiagnosedSlides.splice(i, 0, this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "No"));
+                            undiagnosedSlides.splice(i, 0, this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "No", data.slide_id, data.username));
                             addUndiagnosed = false;
                             break;
                         }
                     }
-                    if (addUndiagnosed) undiagnosedSlides.push(this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "No"));
+                    if (addUndiagnosed) undiagnosedSlides.push(this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "No", data.slide_id, data.username));
                 } else {
                     addDiagnosed = true;
                     for (var a = 0; a < diagnosedSlides.length; a++) {
                         if (this.compareDate(data.timestamp, diagnosedSlides[a].props.date)) {
-                            diagnosedSlides.splice(a, 0, this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "Yes"));
+                            diagnosedSlides.splice(a, 0, this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "Yes", data.slide_id, data.username));
                             addDiagnosed = false;
                             break;
                         }
                     }
-                    if (addDiagnosed) diagnosedSlides.push(this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "Yes"));
+                    if (addDiagnosed) diagnosedSlides.push(this.makeSlideBox(data.slide, data.cancer, data.timestamp, data._id, "Yes", data.slide_id, data.username));
                 }
             });
 

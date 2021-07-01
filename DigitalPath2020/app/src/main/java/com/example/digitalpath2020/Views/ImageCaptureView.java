@@ -15,16 +15,15 @@ import com.example.digitalpath2020.R;
 import org.opencv.android.JavaCamera2View;
 import org.opencv.android.JavaCameraView;
 
-public class MainView extends BaseView {
+public class ImageCaptureView extends BaseView {
     /**
      * Constructor for the MainView class
      * Sets the UI to the main page's UI layout (activity_main)
      * Assigns the activity's button action and stop camera methods to the start/stop camera buttons respectively
      * @param context A reference to the instance of the main activity class
      */
-    public MainView(Context context, int layout) {
+    public ImageCaptureView(Context context, int layout) {
         super(context, layout);
-
         checkLoggedIn(false);
 
         activity.activateCamera((JavaCamera2View) activity.findViewById(R.id.camera));

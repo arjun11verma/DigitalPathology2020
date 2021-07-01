@@ -9,71 +9,46 @@ package com.example.digitalpath2020;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
 
 import com.example.digitalpath2020.Backend.MDatabase;
 import com.example.digitalpath2020.Backend.ServerConnect;
+import com.example.digitalpath2020.ExternalClasses.CameraTimer;
+import com.example.digitalpath2020.ExternalClasses.ImageProcessor;
 import com.example.digitalpath2020.ExternalClasses.Patient;
-import com.example.digitalpath2020.ExternalClasses.Task;
 import com.example.digitalpath2020.Views.AfterCaptureView;
 import com.example.digitalpath2020.Views.BaseView;
 import com.example.digitalpath2020.Views.ConfirmCameraView;
 import com.example.digitalpath2020.Views.LoginView;
-import com.example.digitalpath2020.Views.MainView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCamera2View;
-import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
-import org.opencv.core.CvException;
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
 
-import io.realm.Realm;
 import io.realm.mongodb.App;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCamera2View cameraView; // View that will be accessing the camera, taking pictures and displaying them
-    private Mat baseScreen; // Mat objects that will act as temporary storage for camera data
-    private List<Mat> matList = new ArrayList<Mat>(100); // List of processed Mat objects for uploading and displaying
-    private CameraBridgeViewBase.CvCameraViewFrame baseFrame;
-    private int aspectWidth, aspectHeight, prev = 0;
+    private List<Mat> matList; // List of processed Mat objects for uploading and displaying
+    private Patient currentUser;
 
-    private int delay = 3000; // Delay until camera starts in milliseconds
-    private int period = 3000; // Period of time between each picture being taken
-    private Timer timer; // Timer that will control when each picture is being taken
-    private Task timerTask; // Task to be executed that will take in and do rudimentary processing on images
-    private boolean clicked = false; // Prevents a crash by stopping the button after it has been clicked once
+    private CameraTimer ImageTimer;
+    private ImageProcessor ImgProc;
 
     private MDatabase database; // AWS database to be connected to through the MongoDB client
-    private Patient currentUser = new Patient();
     private ServerConnect serverConnection; // Connection to the Python Image Processing Server using the Volley HTTP library
 
-    private int divider; // Distance for cropping image
-    private Mat mRGBAT, mRGBA, mGRAY, mBIN, mRET; // Mats to store temporary image data
-    private boolean centered = false; // Determines whether cropping range has been determined or not
-    private int stopRowTop = 0, stopRowBottom = 0, stopColLeft = 0, stopColRight = 0; // Cropping ranges
-    private boolean topFlag, bottomFlag, leftFlag, rightFlag; // Booleans to determine when cropping ranges have been determined
-
-    public boolean imageReady = false;
-
+    private String imageCurrentTime;
+    private Mat baseMat;
     MainActivity activity = this; // Instance of the main activity to pass to other classes
-    private BaseView currentView; // Current page of the app
-
-    private String devServerUrl; // for development purposes only
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) { // Connects to and loads the OpenCV Library
         @Override
@@ -101,18 +76,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initDB();
-        serverConnection = new ServerConnect(this);
+        this.matList = new ArrayList<Mat>(100);
+        this.currentUser = new Patient();
+        this.ImgProc = new ImageProcessor();
+        this.ImageTimer = new CameraTimer(2000, 3000);
+        this.database = new MDatabase();
+        this.database.onCreate();
+        this.serverConnection = new ServerConnect(this);
         changeView(new LoginView(this, R.layout.login_activity));
-    }
-
-    /**
-     * Creates an instance of the MongoDB Application class
-     * Connects to the DigitalPath2020 database through the Android Studio MongoDB API
-     */
-    private void initDB() {
-        database = new MDatabase();
-        database.onCreate();
     }
 
     /**
@@ -137,31 +108,18 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * Activates the timer and schedules the task to take pictures
      */
     public void buttonAction() {
-        if (!clicked) {
-            matList.clear();
-            timer = new Timer();
-            timerTask = new Task(this, currentView);
-            timer.schedule(timerTask, delay, period);
-            resetCentered();
-            cameraView.enableView();
-
-            clicked = true;
-            baseScreen = null;
-            prev = 0;
-        }
+        ImgProc.setCentered(false);
+        ImageTimer.resetTimer();
+        cameraView.enableView();
+        matList.clear();
     }
 
     /**
      * Stops the camera and switches the view to the post capture page
      */
     public void cancelCamera() {
-        try {
-            timer.cancel(); // stops the timer
-            timer.purge(); // makes the timertask stop occuring
-            cameraView.disableView();
-        } catch (NullPointerException nullException) {
-            System.out.println(nullException);
-        }
+        ImageTimer.disableTimer();
+        cameraView.disableView();
 
         if (matList.size() == 0) {
             runOnUiThread(new Runnable() {
@@ -178,39 +136,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 }
             });
         }
-    }
-
-    /**
-     * Resizes Mat to fit phone screen
-     *
-     * @param baseScreen Input Mat
-     * @return Resized Mat
-     */
-    private Mat resizeScreen(Mat baseScreen, int aspectWidth, int aspectHeight) {
-        double scaleFactor = Math.min(aspectWidth/baseScreen.size().width, aspectHeight/baseScreen.size().height);
-        Imgproc.resize(baseScreen, baseScreen, new Size(baseScreen.size().width * scaleFactor, baseScreen.size().height * scaleFactor));
-
-        int top = 0, bottom = 0, left = 0, right = 0;
-        if(baseScreen.size().width < aspectWidth) {
-            left = (int)((aspectWidth - baseScreen.size().width)/2); right = left;
-            right += aspectWidth - (right + left + baseScreen.size().width);
-        } else {
-            top = (int)((aspectHeight - baseScreen.size().height)/2); bottom = top;
-            top += aspectHeight - (top + bottom + baseScreen.size().height);
-        }
-
-        Core.copyMakeBorder(baseScreen, baseScreen, top, bottom, left, right, Core.BORDER_CONSTANT);
-
-        return baseScreen;
-    }
-
-    /**
-     * Resets the button so it is clickable
-     */
-    public void resetClick() {
-        matList.clear();
-        resetCentered();
-        clicked = false;
     }
 
     /**
@@ -231,23 +156,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     }
 
-    private void processFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        if (prev == 0) {
-            aspectWidth = inputFrame.rgba().width();
-            aspectHeight = inputFrame.rgba().height();
-        }
-
-        if(imageReady && inputFrame != null) {
-            mRGBA = inputFrame.rgba();
-            mRGBAT = mRGBA.t();
-            Core.flip(mRGBA.t(), mRGBAT, 1);
-            Imgproc.cvtColor(mRGBAT, mRGBAT, Imgproc.COLOR_BGR2RGB);
-            removeBlackSpace();
-            addMat(mRET);
-            imageReady = false;
-        }
-    }
-
     /**
      * Processes the inputs of the camera. The raw data from the camera is constantly being streamed into this method in the form of an OpenCV CvCameraViewFrame
      * This method constantly updates a Mat (Image matrix) in the activity class with the current view of the camera
@@ -256,74 +164,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        processFrame(inputFrame);
-
-        if (matList.size() > prev) {
-            prev++;
-            baseScreen = resizeScreen(matList.get(matList.size() - 1).clone(), aspectWidth, aspectHeight);
+        if (ImageTimer.getImageReady()) {
+            //baseMat = ImgProc.processFrame(inputFrame);
+            System.out.println("Timer activated!");
+            baseMat = inputFrame.rgba();
+            matList.add(baseMat);
+            ImageTimer.setImageReady(false);
         }
-
-        return baseScreen;
-    }
-
-    /**
-     * Defines the black space boundaries of the image
-     */
-    private void defineBoundaries() {
-        topFlag = true;
-        leftFlag = true;
-        bottomFlag = false;
-        rightFlag = false;
-        stopRowTop = 0;
-        stopRowBottom = mRGBAT.rows();
-        stopColLeft = 0;
-        stopColRight = mRGBAT.cols();
-
-        mGRAY = new Mat();
-        Imgproc.cvtColor(mRGBAT, mGRAY, Imgproc.COLOR_RGB2GRAY);
-
-        mBIN = new Mat();
-        Imgproc.threshold(mGRAY, mBIN, 50, 5, Imgproc.THRESH_BINARY);
-
-        for(int i = 0; i < mBIN.rows(); i++) {
-            if(topFlag && Core.sumElems(mBIN.row(i)).val[0] > 50) {
-                stopRowTop = i;
-                topFlag = false;
-                bottomFlag = true;
-            } else if (bottomFlag && Core.sumElems(mBIN.row(i)).val[0] < 50) {
-                stopRowBottom = i;
-                bottomFlag = false;
-            }
-        }
-
-        for(int i = 0; i < mBIN.cols(); i++) {
-            if(leftFlag && Core.sumElems(mBIN.col(i)).val[0] > 50) {
-                stopColLeft = i;
-                leftFlag = false;
-                rightFlag = true;
-            } else if (rightFlag && Core.sumElems(mBIN.col(i)).val[0] < 50) {
-                stopColRight = i;
-                rightFlag = false;
-            }
-        }
-
-        divider = (int)(((stopColRight - stopColLeft)*(2 - 1.412))/4);
-        centered = true;
-    }
-
-    /**
-     * Method that removes the black space that naturally occurs in a microscope image and crops the image into a square
-     */
-    public void removeBlackSpace() {
-        if(!centered) defineBoundaries();
-
-        try {
-            mRET = mRGBAT.submat(new Rect(stopColLeft + divider, stopRowTop + divider, stopColRight - stopColLeft - 2*divider, stopRowBottom - stopRowTop - 2*divider));
-            System.out.println("Correct centering");
-        } catch (CvException e) {
-            mRET = mRGBAT;
-            System.out.println(e);
-        }
+        return (baseMat == null) ? baseMat : ImageProcessor.resizeScreen(baseMat.clone(), ImgProc.getAspectWidth(), ImgProc.getAspectHeight());
     }
 
     /**
@@ -372,30 +220,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    public void changeView(BaseView currentView) {}
+
     // Getters and Setters for the fields
-
-    public void addMat(Mat mat) {
-        matList.add(mat);
-    }
-
-    public CameraBridgeViewBase.CvCameraViewFrame getBaseFrame() {
-        return baseFrame;
-    }
-
-    public void changeView(BaseView v) {
-        currentView = v;
-    }
-
     public App getApp() {
         return database.getTaskApp();
     }
 
     public List<Mat> getMatList() {
         return matList;
-    }
-
-    public Realm getRealm() {
-        return database.getRealm();
     }
 
     public ServerConnect getServerConnection() {
@@ -406,15 +239,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return currentUser;
     }
 
-    public void setDevServerUrl(String devServerUrl) {
-        this.devServerUrl = devServerUrl;
+    public String getImageCurrentTime() {
+        return imageCurrentTime;
     }
 
-    public String getDevServerUrl() {
-        return devServerUrl;
-    }
-
-    public void resetCentered() {
-        centered = false;
+    public void setImageCurrentTime(String imageCurrentTime) {
+        this.imageCurrentTime = imageCurrentTime;
     }
 }

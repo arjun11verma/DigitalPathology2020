@@ -74,6 +74,7 @@ class ImageView extends Component {
         };
     }
 
+    // Adjust to update for S3 
     /**
      * Queries the database for the image and user data from the state objectId
      */

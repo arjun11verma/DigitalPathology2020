@@ -37,11 +37,11 @@ public class AfterCaptureView extends BaseView implements ServerUploadable {
      * Sets the UI to the after capture layout
      * Converts the list of images taken in the main view into bitmaps, and then uploads these bitmaps to the UI page so the user can review the images taken
      * Sets the upload images button's click to the serverUpload method and sets the retake images button's click to a method that redirects to the image capture page
+     *
      * @param context A reference to the instance of the main activity class
      */
     public AfterCaptureView(Context context, int layout) {
         super(context, layout);
-
         checkLoggedIn(false);
 
         uploading = activity.findViewById(R.id.uploadingBar);
@@ -60,7 +60,6 @@ public class AfterCaptureView extends BaseView implements ServerUploadable {
         activity.findViewById(R.id.retakeImgBtn).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.resetClick();
                 activity.changeView(new ConfirmCameraView(activity, R.layout.confirm_camera_activity));
             }
         });
@@ -81,6 +80,7 @@ public class AfterCaptureView extends BaseView implements ServerUploadable {
 
     /**
      * Converts the OpenCV Mat to a Bitmap
+     *
      * @param m Mat to be converted to a bitmap
      * @return The converted bitmap
      */
@@ -92,6 +92,7 @@ public class AfterCaptureView extends BaseView implements ServerUploadable {
 
     /**
      * Converts a Bitmap to a byte array
+     *
      * @param m Bitmap to be converted to a byte array
      * @return The converted byte array
      */
@@ -103,28 +104,24 @@ public class AfterCaptureView extends BaseView implements ServerUploadable {
 
     @Override
     public void uploadToServer(String status) {
-        if (!clicked) {
-            uploading.setVisibility(View.VISIBLE);
+        uploading.setVisibility(View.VISIBLE);
+        JSONObject object = new JSONObject();
 
-            JSONObject object = new JSONObject();
+        try {
+            object.put("slide_id", activity.getCurrentUser().getSlideID());
+            object.put("cancer", activity.getCurrentUser().getCancer());
+            object.put("slide", activity.getCurrentUser().getSlide());
+            object.put("username", activity.getCurrentUser().getUsername());
 
-            try {
-                object.put("name", activity.getCurrentUser().getName());
-                object.put("cancer", activity.getCurrentUser().getCancer());
-                object.put("slide", activity.getCurrentUser().getSlide());
-                object.put("username", activity.getCurrentUser().getUsername());
-
-                for (int i = 0; i < byteArr.length; i++) {
-                    String tag = "" + i;
-                    object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
-                }
-            } catch (JSONException e) {
-                System.out.println(e);
+            for (int i = 0; i < byteArr.length; i++) {
+                String tag = "" + i;
+                object.put(tag, Base64.encodeToString(byteArr[i], Base64.DEFAULT));
             }
-
-            clicked = true;
-
-            activity.getServerConnection().sendImages(object);
+        } catch (JSONException e) {
+            System.out.println(e);
         }
+
+        activity.getServerConnection().sendImages(object);
+
     }
 }

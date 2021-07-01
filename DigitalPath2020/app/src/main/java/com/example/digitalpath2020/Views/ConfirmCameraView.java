@@ -33,14 +33,12 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
      */
     public ConfirmCameraView(Context context, int layout) {
         super(context, layout);
-
         checkLoggedIn(false);
 
         slideName = activity.findViewById(R.id.slideType);
         cancerName = activity.findViewById(R.id.cancerType);
         patientName = activity.findViewById(R.id.patientName);
         devServerUrl = activity.findViewById(R.id.devServerUrl);
-
         reloadOldValues(activity.getCurrentUser());
 
         ((TextView) (activity.findViewById(R.id.setupTitle))).setText("Welcome " + (activity.getCurrentUser().getUsername().split("@"))[0] + "!");
@@ -65,12 +63,10 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
     }
 
     private void reloadOldValues(Patient currentUser) {
-        if (currentUser.getSlide() != null && currentUser.getCancer() != null && currentUser.getName() != null && activity.getDevServerUrl() != null) {
-            slideName.setText(currentUser.getSlide());
-            cancerName.setText(currentUser.getCancer());
-            patientName.setText(currentUser.getName());
-            devServerUrl.setText(activity.getDevServerUrl());
-        }
+        if (currentUser.getSlide() != null) slideName.setText(currentUser.getSlide());
+        if (currentUser.getCancer() != null) cancerName.setText(currentUser.getCancer());
+        if (currentUser.getSlideID() != null) patientName.setText(currentUser.getSlideID());
+        if (activity.getServerConnection().getServerUrl() != null) devServerUrl.setText(activity.getServerConnection().getServerUrl());
     }
 
     /**
@@ -103,10 +99,10 @@ public class ConfirmCameraView extends BaseView implements FormFillable {
 
     @Override
     public void inputForm(String formInputs[]) {
-        activity.getCurrentUser().setName(formInputs[0]);
+        activity.getCurrentUser().setSlideID(formInputs[0]);
         activity.getCurrentUser().setCancer(formInputs[1]);
         activity.getCurrentUser().setSlide(formInputs[2]);
         activity.getServerConnection().setServerUrl(formInputs[3]);
-        activity.changeView(new MainView(activity, R.layout.activity_main)); // switches to picture capturing page
+        activity.changeView(new ImageCaptureView(activity, R.layout.activity_main)); // switches to picture capturing page
     }
 }
